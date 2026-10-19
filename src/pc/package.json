@@ -3,7 +3,7 @@
   "description": "Dark Mode cho Zalo",
   "version": "26.3",
   "main": "index.js",
-  "repository": "https://github.com/quaric/zadark.git",
+  "repository": "https://github.com/ncdai/zadark.git",
   "author": {
     "name": "Quaric",
     "email": "hello@quaric.com",
