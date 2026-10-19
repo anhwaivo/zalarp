@@ -1,5 +1,17 @@
 # Changelog
 
+## ZaDark 26.3
+
+- Hỗ trợ Zalo PC `26.10.11`: Sửa lỗi mất giao diện ZaDark do Zalo gỡ stylesheet [#213](https://github.com/ncdai/zadark/pull/213)
+- Sửa lỗi cài đặt lại ZaDark PC khi đã cài trước đó [#213](https://github.com/ncdai/zadark/pull/213)
+- Bày tỏ cảm xúc trong tin nhắn (Reaction) [#214](https://github.com/ncdai/zadark/pull/214):
+  - Thêm danh sách **Yêu thích**: Nhấp chuột phải vào emoji để thêm/bỏ (tối đa 11 emoji)
+  - Thanh cảm xúc nhanh hiển thị 6 emoji Yêu thích đầu tiên thay cho mặc định của Zalo
+  - Danh sách gần đây lưu tối đa 11 emoji
+  - Emoji hiển thị sắc nét hơn trên Zalo PC
+
+> Cảm ơn [@trungtoan46](https://github.com/trungtoan46) đã đóng góp #213 và #214
+
 ## ZaDark 26.2.1
 
 - Sửa lỗi không thể gửi ảnh từ Clipboard trên Zalo PC (macOS) [#199](https://github.com/ncdai/zadark/issues/199)
