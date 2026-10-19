@@ -698,6 +698,14 @@
 
   document.documentElement.setAttribute('data-zadark-emoji-url', 'zadark/images/zalo-emoji-md.png')
 
+  // Zalo PC renders reaction emojis from per-emoji images (sharper than the sprite).
+  // Use them only when this Zalo version ships them, otherwise keep the sprite.
+  const emojiImageProbe = document.createElement('img')
+  emojiImageProbe.onload = () => {
+    document.documentElement.setAttribute('data-zadark-emoji-dir', 'emoji/emoji-40')
+  }
+  emojiImageProbe.src = 'emoji/emoji-40/row-1-column-1.png'
+
   window.matchMedia('(prefers-color-scheme: dark)').addListener((event) => {
     const theme = ZaDarkStorage.getTheme()
     if (theme === 'auto') {

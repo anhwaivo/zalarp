@@ -5,13 +5,36 @@
     }
   }
 
-  .reaction-emoji-list[data-zadark-quick="true"] > .reaction-emoji-icon:not(.zadark-reaction__quick):not(.clear-react) {
-    display: none;
+  .reaction-emoji-list[data-zadark-quick="true"] {
+    // Hide Zalo's native emojis, but keep the clear reaction button (.reaction-emoji-icon > i.clear-react)
+    > .reaction-emoji-icon:not(.zadark-reaction__quick):not(:has(> .clear-react)) {
+      display: none;
+    }
+
+    // React may add the clear button before our quick emojis or after the "+" trigger,
+    // so keep Zalo's native order: emojis, clear button, "+"
+    > .reaction-emoji-icon:has(> .clear-react),
+    > .clear-react {
+      order: 1;
+    }
+
+    > .zadark-reaction {
+      order: 2;
+    }
   }
 
+  // Zalo positions its quick emoji with ".reaction-emoji-icon > span" (absolute, left: 0, inline top: 2px).
+  // Our span sits inside .zadark-reaction__emoji, so fill the icon box and position the span the same way.
   .zadark-reaction__quick .zadark-reaction__emoji {
-    width: auto;
-    height: auto;
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    > span {
+      position: absolute;
+      left: 0;
+      top: 2px;
+    }
   }
 
   .zadark-reaction {
@@ -103,13 +126,23 @@
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
 
-    &[data-has-emojis="true"] {
+    &[data-visible="true"] {
       padding: 2px 5px;
       border-top: 1px solid var(--border);
     }
 
-    &[data-has-emojis="false"] {
+    &[data-visible="false"] {
       display: none;
+    }
+
+    // Small usage hint next to the row icon, shown while the row has no emojis
+    &-hint {
+      grid-column: 2 / -1;
+      align-self: center;
+      padding: 0 5px;
+      font-size: 11px;
+      line-height: 14px;
+      color: var(--text-secondary);
     }
 
     &-icon {
