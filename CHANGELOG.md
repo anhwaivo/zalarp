@@ -47,7 +47,7 @@
 
 > PC 15.2.4
 
-- Sửa lỗi không thể gửi ảnh từ Clipboard trên Zalo PC (Windows) [#190](https://github.com/quaric/zadark/issues/190)
+- Sửa lỗi không thể gửi ảnh từ Clipboard trên Zalo PC (Windows) [#190](https://github.com/ncdai/zadark/issues/190)
 
 ## ZaDark 25.5.1
 
@@ -72,7 +72,7 @@
 
 > PC 15.2 và Web 9.35
 
-- Bày tỏ cảm xúc tin nhắn (Reaction): Thêm 82 biểu tượng cảm xúc ([#183](https://github.com/quaric/zadark/issues/183)) / Cảm ơn bạn @anhwaivo đã đóng góp ý tưởng và script tham khảo.
+- Bày tỏ cảm xúc tin nhắn (Reaction): Thêm 82 biểu tượng cảm xúc ([#183](https://github.com/ncdai/zadark/issues/183)) / Cảm ơn bạn @anhwaivo đã đóng góp ý tưởng và script tham khảo.
 
 ## ZaDark 25.3.1
 
@@ -85,15 +85,15 @@
 
 > PC 15.1.8 và Web 9.34.6
 
-- Sửa lỗi "Ẩn Tin nhắn trong cuộc trò chuyện" ([#176](https://github.com/quaric/zadark/issues/176))
-- Sửa lỗi "Dịch tin nhắn" ([#177](https://github.com/quaric/zadark/issues/177))
+- Sửa lỗi "Ẩn Tin nhắn trong cuộc trò chuyện" ([#176](https://github.com/ncdai/zadark/issues/176))
+- Sửa lỗi "Dịch tin nhắn" ([#177](https://github.com/ncdai/zadark/issues/177))
 
 ## ZaDark 25.1.2
 
 > PC 15.1.7 và Web 9.34.5
 
 - Sửa lỗi Dark Mode
-  - Khi xem tin nhắn được trả lời ([#174](https://github.com/quaric/zadark/issues/174))
+  - Khi xem tin nhắn được trả lời ([#174](https://github.com/ncdai/zadark/issues/174))
   - Khi double click vào tin nhắn
 
 ## ZaDark 25.1.1
@@ -109,8 +109,8 @@
 
 - Cập nhật Side giới thiệu ở màn hình chính
 - Sửa lỗi Dark Mode
-  - Đồng bộ tin nhắn ([#169](https://github.com/quaric/zadark/issues/169))
-  - Thông tin tin nhắn ([#170](https://github.com/quaric/zadark/issues/170))
+  - Đồng bộ tin nhắn ([#169](https://github.com/ncdai/zadark/issues/169))
+  - Thông tin tin nhắn ([#170](https://github.com/ncdai/zadark/issues/170))
 
 ## ZaDark 24.12.5
 
@@ -129,7 +129,7 @@
 
 > PC 15.1.2
 
-- Khắc phục lỗi cài đặt ZaDark trên Zalo PC: ZaDark nhận diện sai phiên bản Zalo PC mới nhất trong quá trình cài đặt. ([#161](https://github.com/quaric/zadark/issues/161))
+- Khắc phục lỗi cài đặt ZaDark trên Zalo PC: ZaDark nhận diện sai phiên bản Zalo PC mới nhất trong quá trình cài đặt. ([#161](https://github.com/ncdai/zadark/issues/161))
 
 ## ZaDark 24.12.2
 
@@ -156,7 +156,7 @@
 
 > PC 15.0.1 và Web 9.33.7
 
-- Cập nhật giao diện **Menu trái** ở chế độ **Sáng** ([#152](https://github.com/quaric/zadark/issues/152))
+- Cập nhật giao diện **Menu trái** ở chế độ **Sáng** ([#152](https://github.com/ncdai/zadark/issues/152))
 
 ## ZaDark 24.9.5
 
@@ -175,21 +175,21 @@
 
 > PC 14.1 và Web 9.33.4
 
-- Sửa lỗi Dark Mode "Trình xem ảnh/video (Media Viewer)" ([#147](https://github.com/quaric/zadark/issues/147))
-- Cập nhật cuộc trò chuyện được ghim nổi bật hơn ([#146](https://github.com/quaric/zadark/issues/146))
-- Hiển thị tên người dùng Zalo trên Title Bar ([#148](https://github.com/quaric/zadark/issues/148))
+- Sửa lỗi Dark Mode "Trình xem ảnh/video (Media Viewer)" ([#147](https://github.com/ncdai/zadark/issues/147))
+- Cập nhật cuộc trò chuyện được ghim nổi bật hơn ([#146](https://github.com/ncdai/zadark/issues/146))
+- Hiển thị tên người dùng Zalo trên Title Bar ([#148](https://github.com/ncdai/zadark/issues/148))
 
 ## ZaDark 24.9.2
 
 > PC 14.0.3 và Web 9.33.3
 
-- Cập nhật giao diện **Menu trái** ở chế độ **Sáng** giống với chế độ **Tối** ([#144](https://github.com/quaric/zadark/issues/144))
+- Cập nhật giao diện **Menu trái** ở chế độ **Sáng** giống với chế độ **Tối** ([#144](https://github.com/ncdai/zadark/issues/144))
 
 ## ZaDark 24.9.1
 
 > PC 14.0.2 và Web 9.33.2
 
-- Hỗ trợ ảnh nền cuộc trò chuyện ở giao diện **Sáng** ([#142](https://github.com/quaric/zadark/issues/142))
+- Hỗ trợ ảnh nền cuộc trò chuyện ở giao diện **Sáng** ([#142](https://github.com/ncdai/zadark/issues/142))
 
 ## ZaDark 24.8.3
 
@@ -202,7 +202,7 @@
 
 > PC 14.0
 
-- Sửa lỗi không tải được ảnh trên Zalo PC ([#139](https://github.com/quaric/zadark/issues/139))
+- Sửa lỗi không tải được ảnh trên Zalo PC ([#139](https://github.com/ncdai/zadark/issues/139))
 - Tối ưu quá trình cài đặt ZaDark PC
 
 ## ZaDark 24.8.1
@@ -215,7 +215,7 @@
 
 > PC 12.16 và Web 9.33
 
-- Hỗ trợ thay đổi hình nền ở từng cuộc trò chuyện. Hình nền cũ sẽ bị xoá, nên bạn cần cập nhật lại hình ảnh ở từng cuộc trò chuyện ([#135](https://github.com/quaric/zadark/issues/135))
+- Hỗ trợ thay đổi hình nền ở từng cuộc trò chuyện. Hình nền cũ sẽ bị xoá, nên bạn cần cập nhật lại hình ảnh ở từng cuộc trò chuyện ([#135](https://github.com/ncdai/zadark/issues/135))
   - Zalo PC: Hình nền được lưu trên máy tính của bạn, không đồng bộ với Zalo Mobile và mất khi bạn xoá Zalo PC.
   - Zalo Web: Hình nền được lưu trên trình duyệt của bạn, không đồng bộ với Zalo Mobile và mất khi bạn gỡ cài đặt ZaDark.
 - Tăng số lần dịch tin nhắn miễn phí lên 20 lần
@@ -232,7 +232,7 @@
 > PC 12.14.1
 
 - [**Windows**] Khắc phục lỗi nghiêm trọng: Trình kiểm tra virus phát hiện `Trojan.Win64.Agent`, nguồn báo cáo:
-  - https://github.com/quaric/zadark/issues/131
+  - https://github.com/ncdai/zadark/issues/131
   - https://www.virustotal.com
 
 ## ZaDark 24.6.2
@@ -253,19 +253,19 @@
 
 > Firefox 9.29.2
 
-- Sửa lỗi ZaDark không hoạt động trên Firefox ([#126](https://github.com/quaric/zadark/issues/126))
+- Sửa lỗi ZaDark không hoạt động trên Firefox ([#126](https://github.com/ncdai/zadark/issues/126))
 
 ## ZaDark 24.5.1
 
 > PC 12.12.1 và Web 9.29.1
 
-- Hình nền cho cuộc trò chuyện: Tăng chất lượng hình ảnh ([#124](https://github.com/quaric/zadark/issues/124))
+- Hình nền cho cuộc trò chuyện: Tăng chất lượng hình ảnh ([#124](https://github.com/ncdai/zadark/issues/124))
 
 ## ZaDark 24.4.5
 
 > PC 12.12 và Web 9.29
 
-- Thêm chức năng tuỳ chỉnh hình nền cho cuộc trò chuyện ([#122](https://github.com/quaric/zadark/issues/122))
+- Thêm chức năng tuỳ chỉnh hình nền cho cuộc trò chuyện ([#122](https://github.com/ncdai/zadark/issues/122))
 - Sửa lỗi Dark Mode:
   - Trình xem ảnh/video (Media Viewer): Số lượng bày tỏ cảm xúc
   - Quản lý dữ liệu Cloud của tôi (Manage My Cloud data)
@@ -293,7 +293,7 @@
 > PC 12.10.1
 
 - Hiển thị tên kiến trúc (x64, arm64) khi cài đặt ZaDark
-- **[macOS]** Homebrew: Tự động lựa chọn phiên bản ZaDark (Apple Chip, Intel Chip) phù hợp với kiến trúc máy Mac ([#119](https://github.com/quaric/zadark/issues/119))
+- **[macOS]** Homebrew: Tự động lựa chọn phiên bản ZaDark (Apple Chip, Intel Chip) phù hợp với kiến trúc máy Mac ([#119](https://github.com/ncdai/zadark/issues/119))
 
 ## ZaDark 24.4.1
 
@@ -319,7 +319,7 @@
 > PC 12.8 và Web 9.25
 
 - Sửa lỗi nút dịch tin nhắn khi bật "Ẩn tin nhắn trong cuộc trò chuyện"
-- Sửa lỗi vẫn hiện thông tin người bày tỏ cảm xúc tin nhắn khi bật "Ẩn tin nhắn gần nhất" ([#113](https://github.com/quaric/zadark/issues/113))
+- Sửa lỗi vẫn hiện thông tin người bày tỏ cảm xúc tin nhắn khi bật "Ẩn tin nhắn gần nhất" ([#113](https://github.com/ncdai/zadark/issues/113))
 
 ## ZaDark 24.2.3
 > PC 12.7.1
@@ -340,20 +340,20 @@
 > PC 12.6 và Web 9.23
 
 - Sửa lỗi Dark Mode: My Cloud > "Lưu bền Cloud (Cloud saved)"
-- Sửa lỗi Dark Mode: Group Chat > Danh thiếp > "Thêm thành viên" ([#106](https://github.com/quaric/zadark/issues/106))
-- Thêm chức năng "Dịch tin nhắn" (Beta) ([#107](https://github.com/quaric/zadark/issues/107))
+- Sửa lỗi Dark Mode: Group Chat > Danh thiếp > "Thêm thành viên" ([#106](https://github.com/ncdai/zadark/issues/106))
+- Thêm chức năng "Dịch tin nhắn" (Beta) ([#107](https://github.com/ncdai/zadark/issues/107))
 
 ## ZaDark 24.1.2
 > PC 12.5 và Web 9.22
 
 - Tối ưu mã nguồn
 - **[Windows, macOS]** Thêm lệnh `-v`, `--version` để xem phiên bản ZaDark
-- **[macOS]** Hỗ trợ cài đặt ZaDark từ **Homebrew** ([Hướng dẫn sử dụng](https://zadark.com/pc/macos#install-zadark-with-homebrew)) ([#104](https://github.com/quaric/zadark/issues/104))
+- **[macOS]** Hỗ trợ cài đặt ZaDark từ **Homebrew** ([Hướng dẫn sử dụng](https://zadark.com/pc/macos#install-zadark-with-homebrew)) ([#104](https://github.com/ncdai/zadark/issues/104))
 
 ## ZaDark 24.1.1
 > PC 12.4 và Web 9.21
 
-- Sửa lỗi Dark Mode của Popup danh sách đã xem tin nhắn ([#102](https://github.com/quaric/zadark/issues/102))
+- Sửa lỗi Dark Mode của Popup danh sách đã xem tin nhắn ([#102](https://github.com/ncdai/zadark/issues/102))
 - Cập nhật cỡ chữ của khung soạn tin nhắn (không hỗ trợ chế độ định dạng tin nhắn) bằng với cỡ chữ của tin nhắn (Tuỳ chỉnh cỡ chữ trong phần ZaDark Settings)
 
 ## ZaDark 23.12.5
@@ -366,18 +366,18 @@
 > PC 12.2 và Web 9.19
 
 ### Fixed
-- Sửa lỗi Ẩn tên cuộc trò chuyện "Cộng đồng" ([#97](https://github.com/quaric/zadark/issues/97))
-- Sửa lỗi Dark Mode giao diện "Gửi lời mời kết bạn" ([#96](https://github.com/quaric/zadark/issues/96))
+- Sửa lỗi Ẩn tên cuộc trò chuyện "Cộng đồng" ([#97](https://github.com/ncdai/zadark/issues/97))
+- Sửa lỗi Dark Mode giao diện "Gửi lời mời kết bạn" ([#96](https://github.com/ncdai/zadark/issues/96))
 
 ## ZaDark 23.12.3
 > PC 12.1 và Web 9.18
 
 ### Fixed
-- Sửa lỗi không ẩn được nội dung của tin nhắn kèm hình ảnh ([#93](https://github.com/quaric/zadark/issues/93))
+- Sửa lỗi không ẩn được nội dung của tin nhắn kèm hình ảnh ([#93](https://github.com/ncdai/zadark/issues/93))
 - Sửa lỗi Dark Mode giao diện "Hồ sơ của bạn"
 
 ### Changed
-- Ẩn ảnh đại diện và Tên cuộc trò chuyện: Khi rê chuột vào cuộc trò chuyện nào thì sẽ hiển thị Ảnh đại diện và Tên cuộc trò chuyện đó (trước đây chỉ cần rê chuột vào Sidebar là sẽ hiển thị tất cả cuộc trò chuyện), thay đổi này giúp chống nhìn trộm tốt hơn ([#94](https://github.com/quaric/zadark/issues/94))
+- Ẩn ảnh đại diện và Tên cuộc trò chuyện: Khi rê chuột vào cuộc trò chuyện nào thì sẽ hiển thị Ảnh đại diện và Tên cuộc trò chuyện đó (trước đây chỉ cần rê chuột vào Sidebar là sẽ hiển thị tất cả cuộc trò chuyện), thay đổi này giúp chống nhìn trộm tốt hơn ([#94](https://github.com/ncdai/zadark/issues/94))
 
 ## ZaDark 23.12.2
 > PC 12.0
@@ -414,15 +414,15 @@
 > PC 11.6 và Web 9.16
 
 ### Fixed
-- Sửa lỗi không ẩn được hình ảnh ([#86](https://github.com/quaric/zadark/issues/86)).
-- Sửa lỗi Dark Mode trạng thái đã xem tin nhắn ([#87](https://github.com/quaric/zadark/issues/87)).
+- Sửa lỗi không ẩn được hình ảnh ([#86](https://github.com/ncdai/zadark/issues/86)).
+- Sửa lỗi Dark Mode trạng thái đã xem tin nhắn ([#87](https://github.com/ncdai/zadark/issues/87)).
 
 ### Added
 - Thêm bản cài đặt **arm64** cho macOS.
 - Thêm Google AdSense vào Website ZaDark.com để tìm kiếm kinh phí phát triển sản phẩm. Chúng tôi xin lỗi nếu quảng cáo làm phiền mọi người khi truy cập Website.
 
 ### Changed
-- Ẩn tiêu đề TitleBar ([#88](https://github.com/quaric/zadark/issues/88)).
+- Ẩn tiêu đề TitleBar ([#88](https://github.com/ncdai/zadark/issues/88)).
 
 ## ZaDark 23.10.1
 > PC 11.5 và Web 9.15
@@ -447,11 +447,11 @@
 > PC 11.3 và Web 9.13
 
 ### Fixed
-- Tăng độ đậm cho nội dung được tô đậm (bold) trong tin nhắn ([#78](https://github.com/quaric/zadark/issues/78)).
-- Sửa lỗi Dark Mode biểu tượng Phó nhóm ([#80](https://github.com/quaric/zadark/issues/80)).
+- Tăng độ đậm cho nội dung được tô đậm (bold) trong tin nhắn ([#78](https://github.com/ncdai/zadark/issues/78)).
+- Sửa lỗi Dark Mode biểu tượng Phó nhóm ([#80](https://github.com/ncdai/zadark/issues/80)).
 
 ### Added
-- Bổ sung phím tắt chuyển chế độ Sáng/Tối ([#79](https://github.com/quaric/zadark/issues/79))
+- Bổ sung phím tắt chuyển chế độ Sáng/Tối ([#79](https://github.com/ncdai/zadark/issues/79))
   - Windows: `Alt+D`
   - macOS: `⌘D`
 
@@ -504,7 +504,7 @@
 
 ### Fixed
 #### Web specific
-- **[Firefox]** Sửa lỗi không thể cài đặt phông chữ ([#74](https://github.com/quaric/zadark/issues/74))
+- **[Firefox]** Sửa lỗi không thể cài đặt phông chữ ([#74](https://github.com/ncdai/zadark/issues/74))
 
 ### Changed
 - Thay đổi màu sắc nhãn "Pro"
@@ -579,16 +579,16 @@
 ### Changed
 - Thêm màu nền tối (Overlay) giúp người dùng tập trung vào Popup cài đặt ZaDark hơn
 - Bỏ nhãn BETA của cài đặt phông chữ từ Google Fonts
-- Ẩn Tin nhắn gần nhất: Giữ lại Nhãn (Label) cuộc trò chuyện ([#57](https://github.com/quaric/zadark/issues/57))
+- Ẩn Tin nhắn gần nhất: Giữ lại Nhãn (Label) cuộc trò chuyện ([#57](https://github.com/ncdai/zadark/issues/57))
 
 ## ZaDark 23.7.4
 > PC 9.5 và Web 9.5
 
 ### Added
 - Cập nhật chức năng: Ẩn Tin nhắn trong cuộc trò chuyện
-  - Hỗ trợ Ẩn nội dung khung soạn tin nhắn ([#62](https://github.com/quaric/zadark/issues/62))
+  - Hỗ trợ Ẩn nội dung khung soạn tin nhắn ([#62](https://github.com/ncdai/zadark/issues/62))
   - Thêm minh hoạ cách sử dụng (Thay thế Tooltip khó hiểu)
-- Kích hoạt/Vô hiệu hoá sử dụng phím tắt ([#68](https://github.com/quaric/zadark/issues/68))
+- Kích hoạt/Vô hiệu hoá sử dụng phím tắt ([#68](https://github.com/ncdai/zadark/issues/68))
 
 ### Changed
 - Thay đổi màu của Logo nhà phát hành Quaric
@@ -598,10 +598,10 @@
 
 ### Fixed
 
-- Sửa lỗi màu nền không thay đổi khi rê chuột/lựa chọn tin nhắn nhanh ([#65](https://github.com/quaric/zadark/issues/65))
+- Sửa lỗi màu nền không thay đổi khi rê chuột/lựa chọn tin nhắn nhanh ([#65](https://github.com/ncdai/zadark/issues/65))
 
 #### Windows specific
-- Sửa lỗi phím tắt "Ẩn ảnh đại diện, tên cuộc trò chuyện" bị trùng ([#66](https://github.com/quaric/zadark/issues/66))
+- Sửa lỗi phím tắt "Ẩn ảnh đại diện, tên cuộc trò chuyện" bị trùng ([#66](https://github.com/ncdai/zadark/issues/66))
 
 ## ZaDark 23.7.2
 > PC 9.3 và Web 9.3
@@ -625,15 +625,15 @@
 > PC 9.2 và Web 9.2
 
 ### Fixed
-- Sửa lỗi collapse/expand các session ở mục Thông tin hội thoại ([#60](https://github.com/quaric/zadark/issues/60))
+- Sửa lỗi collapse/expand các session ở mục Thông tin hội thoại ([#60](https://github.com/ncdai/zadark/issues/60))
 
 ### Added
-- Tuỳ chỉnh phông chữ từ Google Fonts (BETA) ([#55](https://github.com/quaric/zadark/issues/55), [#52](https://github.com/quaric/zadark/issues/52))
+- Tuỳ chỉnh phông chữ từ Google Fonts (BETA) ([#55](https://github.com/ncdai/zadark/issues/55), [#52](https://github.com/ncdai/zadark/issues/52))
 
 ### Changed
-- Làm nổi bật phím tắt tin nhắn nhanh (VD: /hello) ([#59](https://github.com/quaric/zadark/issues/59))
+- Làm nổi bật phím tắt tin nhắn nhanh (VD: /hello) ([#59](https://github.com/ncdai/zadark/issues/59))
 - Sửa lỗi Dark Mode nhãn thời gian của tin nhắn
-- Thay đổi phím tắt tuỳ chỉnh cỡ chữ ([#58](https://github.com/quaric/zadark/issues/58))
+- Thay đổi phím tắt tuỳ chỉnh cỡ chữ ([#58](https://github.com/ncdai/zadark/issues/58))
 
 | Tên chức năng                            | Windows             | macOS         |
 | ---------------------------------------- | ------------------- | ------------- |
