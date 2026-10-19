@@ -5,6 +5,15 @@
     }
   }
 
+  .reaction-emoji-list[data-zadark-quick="true"] > .reaction-emoji-icon:not(.zadark-reaction__quick):not(.clear-react) {
+    display: none;
+  }
+
+  .zadark-reaction__quick .zadark-reaction__emoji {
+    width: auto;
+    height: auto;
+  }
+
   .zadark-reaction {
     position: relative;
     display: flex;
@@ -60,8 +69,8 @@
     display: flex;
     flex-direction: column;
     width: 202px;
-    height: 202px;
-    transform: translate(-180px, -198px);
+    // Grows with the favorite/recent rows; keep the bottom edge where the 202px popover used to sit
+    transform: translate(-180px, calc(-100% + 4px));
 
     border: 1px solid var(--zadark-reaction-border);
     background-color: var(--zadark-reaction-background);
@@ -76,8 +85,10 @@
     position: relative;
     overflow: auto;
 
-    flex-grow: 1;
+    flex-shrink: 0;
+    height: 162px;
     display: grid;
+    align-content: start;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     padding: 5px;
 
@@ -88,13 +99,17 @@
     }
   }
 
-  .zadark-reaction__popover-content__recent {
+  .zadark-reaction__popover-content__row {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
 
-    &[data-has-recent-emojis="true"] {
+    &[data-has-emojis="true"] {
       padding: 2px 5px;
       border-top: 1px solid var(--border);
+    }
+
+    &[data-has-emojis="false"] {
+      display: none;
     }
 
     &-icon {
@@ -112,6 +127,7 @@
   }
 
   .zadark-reaction__emoji {
+    transition: opacity 0.15s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -125,6 +141,11 @@
     &:hover > span {
       animation: hover-reaction-icon 0.1s;
       animation-fill-mode: forwards;
+    }
+
+    // Favorite row is full: dim briefly instead of pinning
+    &[data-favorite-full="true"] {
+      opacity: 0.3;
     }
   }
 }

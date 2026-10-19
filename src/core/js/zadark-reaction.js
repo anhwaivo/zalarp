@@ -447,6 +447,13 @@
   }
 
   const RECENT_EMOJI_LIST_KEY = 'zadark/reaction-recent-emojis'
+  const FAVORITE_EMOJI_LIST_KEY = 'zadark/reaction-favorite-emojis'
+
+  // Each bottom row is a 6-column grid: 1 cell for the row icon + 11 emojis = 2 full lines
+  const RECENT_EMOJI_LIMIT = 11
+  const FAVORITE_EMOJI_LIMIT = 11
+  // Zalo's quick reaction bar shows 6 emojis; the first favorites replace them
+  const QUICK_EMOJI_LIMIT = 6
 
   /**
    * Saves the list of recently used emojis to localStorage.
@@ -462,9 +469,22 @@
   }
 
   /**
+   * Saves the list of favorite emojis to localStorage.
+   *
+   * @param {Emoji[]} emojis - An array of emoji objects to be saved.
+   */
+  const saveFavoriteEmojis = (emojis) => {
+    try {
+      localStorage.setItem(FAVORITE_EMOJI_LIST_KEY, JSON.stringify(emojis))
+    } catch (e) {
+      log('Failed to save favorite emojis to localStorage', e)
+    }
+  }
+
+  /**
    * Adds a new emoji to the recent emoji list.
    * If the emoji already exists, it is moved to the top of the list.
-   * The list is trimmed to a maximum of 5 emojis.
+   * The list is trimmed to a maximum of RECENT_EMOJI_LIMIT emojis.
    *
    * @param {Emoji} emoji - The emoji object to be added.
    */
@@ -477,8 +497,8 @@
 
     RECENT_EMOJI_LIST.unshift(emoji)
 
-    if (RECENT_EMOJI_LIST.length > 5) {
-      RECENT_EMOJI_LIST.length = 5
+    if (RECENT_EMOJI_LIST.length > RECENT_EMOJI_LIMIT) {
+      RECENT_EMOJI_LIST.length = RECENT_EMOJI_LIMIT
     }
 
     saveRecentEmojis(RECENT_EMOJI_LIST)
@@ -524,7 +544,46 @@
     }
   }
 
+  /**
+   * Retrieves the list of favorite emojis from localStorage.
+   * Returns a cleaned list with only valid emojis based on EMOJI_LIST.
+   *
+   * @returns {Emoji[]} An array of favorite emoji objects.
+   */
+  const getFavoriteEmojis = () => {
+    try {
+      const favoriteEmojis = localStorage.getItem(FAVORITE_EMOJI_LIST_KEY)
+      return favoriteEmojis ? cleanEmojis(JSON.parse(favoriteEmojis)).slice(0, FAVORITE_EMOJI_LIMIT) : []
+    } catch (e) {
+      log('Failed to parse favorite emojis from localStorage', e)
+      return []
+    }
+  }
+
   const RECENT_EMOJI_LIST = getRecentEmojis()
+  const FAVORITE_EMOJI_LIST = getFavoriteEmojis()
+
+  /**
+   * Pins an emoji to the favorite list, or unpins it if it is already there.
+   * New favorites are appended so the row keeps the order the user picked.
+   *
+   * @param {Emoji} emoji - The emoji object to toggle.
+   * @returns {boolean} - false when the list is full and the emoji was not added.
+   */
+  const toggleFavoriteEmoji = (emoji) => {
+    const existingIndex = FAVORITE_EMOJI_LIST.findIndex(e => e.rIcon === emoji.rIcon)
+
+    if (existingIndex !== -1) {
+      FAVORITE_EMOJI_LIST.splice(existingIndex, 1)
+    } else if (FAVORITE_EMOJI_LIST.length >= FAVORITE_EMOJI_LIMIT) {
+      return false
+    } else {
+      FAVORITE_EMOJI_LIST.push(emoji)
+    }
+
+    saveFavoriteEmojis(FAVORITE_EMOJI_LIST)
+    return true
+  }
 
   /**
    * A cache map for storing previously created emoji elements,
@@ -570,6 +629,8 @@
     emojiEl.style.margin = '-1px'
 
     wrapperEl.appendChild(emojiEl)
+    wrapperEl.title = 'Chuột phải để ghim vào / bỏ khỏi Yêu thích'
+    wrapperEl.setAttribute('data-r-icon', emoji.rIcon)
 
     emojiCache.set(cacheKey, wrapperEl.cloneNode(true))
     attachClickHandler(wrapperEl, emoji, sendReaction, closePopover)
@@ -606,6 +667,28 @@
       }
     })
   }
+
+  // Zalo listens to "contextmenu" in the capture phase on each message and stops it,
+  // so listen on window (capture) to run first. Right-click an emoji = pin/unpin it.
+  window.addEventListener('contextmenu', (e) => {
+    const el = e.target && e.target.closest && e.target.closest('.zadark-reaction__emoji')
+    if (!el) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    const emoji = EMOJI_LIST.find((item) => item.rIcon === el.getAttribute('data-r-icon'))
+    if (!emoji) return
+
+    if (!toggleFavoriteEmoji(emoji)) {
+      el.setAttribute('data-favorite-full', 'true')
+      setTimeout(() => el.removeAttribute('data-favorite-full'), 400)
+      return
+    }
+
+    // Bubbles up to the popover that contains this emoji so it can re-render its rows
+    el.dispatchEvent(new CustomEvent('zadark-reaction:favorites-change', { bubbles: true }))
+  }, true)
 
   /**
    * Traverses up the React Fiber tree starting from a given DOM element,
@@ -673,19 +756,68 @@
           popoverContentListEl.className = 'zadark-reaction__popover-content__list'
           popoverContentListEl.appendChild(popoverContentListFragment)
 
+          const popoverContentFavoriteEl = document.createElement('div')
+          popoverContentFavoriteEl.className = 'zadark-reaction__popover-content__row zadark-reaction__popover-content__favorite'
+
           const popoverContentRecentEl = document.createElement('div')
-          popoverContentRecentEl.className = 'zadark-reaction__popover-content__recent'
+          popoverContentRecentEl.className = 'zadark-reaction__popover-content__row zadark-reaction__popover-content__recent'
 
           const popoverContentEl = document.createElement('div')
           popoverContentEl.className = 'zadark-reaction__popover-content'
           popoverContentEl.appendChild(popoverContentListEl)
+          popoverContentEl.appendChild(popoverContentFavoriteEl)
           popoverContentEl.appendChild(popoverContentRecentEl)
 
           popoverContentEl.addEventListener('mouseleave', (e) => {
             containerEl.setAttribute('data-open', 'false')
           })
 
-          let lastRenderedRecentEmojis = ''
+          const lastRenderedKeys = new Map()
+
+          /**
+           * Renders one bottom row (row icon + emojis), skipping the work when nothing changed.
+           *
+           * @param {HTMLElement} rowEl - The row container.
+           * @param {string} iconHTML - SVG markup of the row icon.
+           * @param {Emoji[]} emojis - Emojis to show in the row.
+           */
+          const renderRow = (rowEl, iconHTML, emojis) => {
+            const key = emojis.map((e) => `${e.rType}:${e.rIcon}`).join(',')
+
+            if (lastRenderedKeys.get(rowEl) === key) {
+              return
+            }
+
+            lastRenderedKeys.set(rowEl, key)
+
+            const iconEl = document.createElement('span')
+            iconEl.className = 'zadark-reaction__popover-content__row-icon'
+            iconEl.innerHTML = iconHTML
+
+            const fragment = document.createDocumentFragment()
+            fragment.appendChild(iconEl)
+            for (const emoji of emojis) {
+              fragment.appendChild(createEmojiEl(emoji, sendReaction, closePopover))
+            }
+
+            rowEl.setAttribute('data-has-emojis', String(emojis.length > 0))
+            rowEl.replaceChildren(fragment)
+          }
+
+          const renderBottomRows = () => {
+            renderRow(
+              popoverContentFavoriteEl,
+              '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+              FAVORITE_EMOJI_LIST
+            )
+            renderRow(
+              popoverContentRecentEl,
+              '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>',
+              RECENT_EMOJI_LIST.slice(0, RECENT_EMOJI_LIMIT)
+            )
+          }
+
+          popoverContentEl.addEventListener('zadark-reaction:favorites-change', renderBottomRows)
 
           const popoverTriggerEl = document.createElement('button')
           popoverTriggerEl.classList = 'zadark-reaction__popover-trigger'
@@ -699,25 +831,7 @@
             containerEl.setAttribute('data-open', String(!isOpen))
 
             if (!isOpen) {
-              const recentKey = RECENT_EMOJI_LIST.slice(0, 5).map((e) => `${e.rType}:${e.rIcon}`).join(',')
-
-              if (recentKey === lastRenderedRecentEmojis) {
-                return
-              }
-
-              lastRenderedRecentEmojis = recentKey
-
-              const recentIconEl = document.createElement('span')
-              recentIconEl.className = 'zadark-reaction__popover-content__recent-icon'
-              recentIconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history-icon lucide-history"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>'
-
-              const recentEmojisFragment = document.createDocumentFragment()
-              recentEmojisFragment.appendChild(recentIconEl)
-              for (const emoji of RECENT_EMOJI_LIST.slice(0, 5)) {
-                recentEmojisFragment.appendChild(createEmojiEl(emoji, sendReaction, closePopover))
-              }
-              popoverContentRecentEl.setAttribute('data-has-recent-emojis', String(RECENT_EMOJI_LIST.length > 0))
-              popoverContentRecentEl.replaceChildren(recentEmojisFragment)
+              renderBottomRows()
             }
           })
 
@@ -725,6 +839,34 @@
           containerEl.appendChild(popoverContentEl)
 
           el.appendChild(containerEl)
+
+          let lastRenderedQuickKey = ''
+
+          // Replace Zalo's quick reactions with the first favorites (CSS hides the native ones)
+          const renderQuickEmojis = () => {
+            const quickEmojis = FAVORITE_EMOJI_LIST.slice(0, QUICK_EMOJI_LIMIT)
+            const key = quickEmojis.map((e) => `${e.rType}:${e.rIcon}`).join(',')
+
+            if (key === lastRenderedQuickKey) {
+              return
+            }
+
+            lastRenderedQuickKey = key
+
+            el.querySelectorAll(':scope > .zadark-reaction__quick').forEach((quickEl) => quickEl.remove())
+            el.setAttribute('data-zadark-quick', String(quickEmojis.length > 0))
+
+            for (const emoji of quickEmojis) {
+              const quickEl = document.createElement('div')
+              quickEl.className = 'reaction-emoji-icon zadark-reaction__quick'
+              quickEl.appendChild(createEmojiEl(emoji, sendReaction))
+              el.insertBefore(quickEl, containerEl)
+            }
+          }
+
+          renderQuickEmojis()
+          el.addEventListener('zadark-reaction:favorites-change', renderQuickEmojis)
+          el.addEventListener('mouseenter', renderQuickEmojis)
         })
       })
     })
