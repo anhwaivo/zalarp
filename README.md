@@ -65,6 +65,20 @@ This project is proudly supported by:
         </a>
       </td>
       <td>
+        <a href="https://www.nixtla.io?utm_source=chanhdai.com#gh-light-mode-only">
+          <img
+            src="https://assets.chanhdai.com/images/sponsors/nixtla.svg?v=1#gh-light-mode-only"
+            alt="Nixtla"
+          />
+        </a>
+        <a href="https://www.nixtla.io?utm_source=chanhdai.com#gh-dark-mode-only">
+          <img
+            src="https://assets.chanhdai.com/images/sponsors/nixtla-dark.svg?v=1#gh-dark-mode-only"
+            alt="Nixtla"
+          />
+        </a>
+      </td>
+      <td>
         <a href="https://shadcnstudio.com?utm_source=chanhdai.com&utm_medium=banner&utm_campaign=github#gh-light-mode-only">
           <img src="https://assets.chanhdai.com/images/sponsors/shadcnstudio.svg?v=2#gh-light-mode-only" alt="shadcnstudio.com" />
         </a>
@@ -72,6 +86,8 @@ This project is proudly supported by:
           <img src="https://assets.chanhdai.com/images/sponsors/shadcnstudio-dark.svg?v=2#gh-dark-mode-only" alt="shadcnstudio.com" />
         </a>
       </td>
+    </tr>
+    <tr>
       <td>
         <a href="https://shadcncraft.com?utm_source=chanhdai.com#gh-light-mode-only">
           <img
@@ -86,8 +102,6 @@ This project is proudly supported by:
           />
         </a>
       </td>
-    </tr>
-    <tr>
       <td>
         <a href="https://www.shadcnblocks.com?utm_source=chanhdai.com#gh-light-mode-only">
           <img
@@ -102,7 +116,6 @@ This project is proudly supported by:
           />
         </a>
       </td>
-      <td></td>
       <td></td>
     </tr>
   </tbody>
