@@ -454,6 +454,12 @@ const installZaDark = async (zaloDir) => {
   printDebug('- createDir:', ZADARK_TMP_PATH)
   fs.mkdirSync(ZADARK_TMP_PATH, { recursive: true })
 
+  // When reinstalling, app.asar was the extracted folder (deleted above), so restore it from the backup
+  if (!fs.existsSync(appAsarPath) && isFile(appAsarBakPath)) {
+    printDebug('- renameFile:', appAsarBakPath, '>', appAsarPath)
+    fs.renameSync(appAsarBakPath, appAsarPath)
+  }
+
   printDebug('- extractAsar:', appAsarPath, '>', appDirTmpPath)
   asar.uncacheAll()
   asar.extractAll(appAsarPath, appDirTmpPath)

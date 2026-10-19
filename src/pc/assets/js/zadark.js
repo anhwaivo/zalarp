@@ -13,6 +13,27 @@
     window.localforage = require('zadark/libs/zadark-localforage.min.js')
   }
 
+  // Zalo PC >= v26.10 removes injected <link> tags from <head> at runtime, re-add them when missing
+  const ZADARK_STYLESHEETS = [
+    'zadark/css/zadark-fonts.min.css',
+    'zadark/css/zadark.min.css',
+    'zadark/css/zadark-popup.min.css'
+  ]
+
+  const ensureZaDarkStylesheets = () => {
+    ZADARK_STYLESHEETS.forEach((href) => {
+      if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) return
+
+      const linkEl = document.createElement('link')
+      linkEl.rel = 'stylesheet'
+      linkEl.href = href
+      document.head.appendChild(linkEl)
+    })
+  }
+
+  ensureZaDarkStylesheets()
+  new MutationObserver(ensureZaDarkStylesheets).observe(document.head, { childList: true })
+
   const ZADARK_THEME_KEY = '@ZaDark:THEME'
   const ZADARK_FONT_FAMILY_KEY = '@ZaDark:FONT_FAMILY'
   const ZADARK_FONT_SIZE_KEY = '@ZaDark:FONT_SIZE'
