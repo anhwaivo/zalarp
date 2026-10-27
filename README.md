@@ -3,7 +3,7 @@
 <div align="center">
   <img src=".github/zadark-icon.png" width="128" alt="ZaDark" />
 
-  <h1>ZaDark – Zalo Dark Mode</h1>
+  <h1>ZaLarp - ZaDark with more features ig</h1>
 
   [![SourceForge Downloads (folder)](https://img.shields.io/sourceforge/dt/zadark/ZaDarkPC%2FWindows?style=for-the-badge&label=Windows&labelColor=00002D&color=1740b6&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTAgMGgxMS4zNzd2MTEuMzcySDBabTEyLjYyMyAwSDI0djExLjM3MkgxMi42MjNaTTAgMTIuNjIzaDExLjM3N1YyNEgwWm0xMi42MjMgMEgyNFYyNEgxMi42MjMiIGZpbGw9IiMzOTg5RkYiLz48L3N2Zz4=)](https://go.quaric.com/zadark-win)
   [![SourceForge Downloads (folder)](https://img.shields.io/sourceforge/dt/zadark/ZaDarkPC%2FmacOS?style=for-the-badge&logo=apple&logoColor=3989FF&label=macOS&labelColor=00002D&color=1740b6)](https://go.quaric.com/zadark-mac)
