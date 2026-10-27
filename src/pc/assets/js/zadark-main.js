@@ -19,10 +19,10 @@ const PARTITION_NAME = 'persist:zalo'
 const BLOCK_STORAGE_KEYS = {
   block_typing: '@ZaDark:ENABLED_BLOCK_TYPING',
   block_delivered: '@ZaDark:ENABLED_BLOCK_DELIVERED',
-  block_seen: '@ZaDark:ENABLED_BLOCK_SEEN',
-  block_story_seen: '@ZaDark:ENABLED_BLOCK_STORY_SEEN',
-  block_ads: '@ZaDark:ENABLED_BLOCK_ADS',
-  block_telemetry: '@ZaDark:ENABLED_BLOCK_TELEMETRY'
+  block_seen: '@ZaDark:ENABLED_BLOCK_SEEN'
+  // block_story_seen: '@ZaDark:ENABLED_BLOCK_STORY_SEEN',
+  // block_ads: '@ZaDark:ENABLED_BLOCK_ADS',
+  // block_telemetry: '@ZaDark:ENABLED_BLOCK_TELEMETRY'
 }
 
 const FILTER_DOMAINS = [
@@ -81,10 +81,10 @@ app.whenReady().then(() => {
   const _blockSettings = {
     block_typing: false,
     block_delivered: false,
-    block_seen: false,
-    block_story_seen: false,
-    block_ads: false,
-    block_telemetry: false
+    block_seen: false
+    // block_story_seen: false,
+    // block_ads: false,
+    // block_telemetry: false
   }
 
   const zaloSession = session.fromPartition(PARTITION_NAME)
@@ -111,16 +111,19 @@ app.whenReady().then(() => {
       return
     }
 
+    /*
     // Story seen
     if (_blockSettings.block_story_seen && details.url.includes('api/social/story/seen')) {
       if (DEBUG) console.log('ZaDarkPC: block_story_seen', details.url)
       callback({ cancel: true })
       return
     }
+    */
 
     callback({ cancel: false })
   })
 
+  /*
   zaloSession.webRequest.onBeforeRequest(ADS_FILTER, (details, callback) => {
     if (!_blockSettings.block_ads) {
       callback({ cancel: false })
@@ -140,6 +143,7 @@ app.whenReady().then(() => {
     if (DEBUG) console.log('ZaDarkPC: block_telemetry', details.url)
     callback({ cancel: true })
   })
+  */
 
   zaloSession.cookies.get({ domain: 'zadark.com' })
     .then((cookies = []) => {

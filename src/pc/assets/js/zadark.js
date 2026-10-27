@@ -57,13 +57,22 @@
     block_typing: ZADARK_ENABLED_BLOCK_TYPING_KEY,
     block_delivered: ZADARK_ENABLED_BLOCK_DELIVERED_KEY,
     block_seen: ZADARK_ENABLED_BLOCK_SEEN_KEY,
-    block_story_seen: ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY,
-    block_ads: ZADARK_ENABLED_BLOCK_ADS_KEY,
-    block_telemetry: ZADARK_ENABLED_BLOCK_TELEMETRY_KEY,
-    auto_download_media: ZADARK_ENABLED_ORIGINAL_PHOTO_KEY,
-    keep_unsent: ZADARK_ENABLED_KEEP_UNSENT_KEY
+    // block_story_seen: ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY,
+    // block_ads: ZADARK_ENABLED_BLOCK_ADS_KEY,
+    // block_telemetry: ZADARK_ENABLED_BLOCK_TELEMETRY_KEY,
+    auto_download_media: ZADARK_ENABLED_ORIGINAL_PHOTO_KEY
+    // keep_unsent: ZADARK_ENABLED_KEEP_UNSENT_KEY
   }
-  const BLOCK_IDS = ['block_typing', 'block_delivered', 'block_seen', 'block_story_seen', 'block_ads', 'block_telemetry', 'auto_download_media', 'keep_unsent']
+  const BLOCK_IDS = [
+    'block_typing',
+    'block_delivered',
+    'block_seen',
+    // 'block_story_seen',
+    // 'block_ads',
+    // 'block_telemetry',
+    'auto_download_media'
+    // 'keep_unsent'
+  ]
 
   const ZADARK_USE_HOTKEYS = '@ZaDark:USE_HOTKEYS'
   const ZADARK_KNOWN_VERSION_KEY = '@ZaDark:KNOWN_VERSION'
@@ -104,6 +113,7 @@
       true: 'Đã bật Ẩn trạng thái Đã xem',
       false: 'Đã tắt Ẩn trạng thái Đã xem'
     },
+    /*
     block_story_seen: {
       true: 'Đã bật Xem Tin (Story) ẩn danh',
       false: 'Đã tắt Xem Tin (Story) ẩn danh'
@@ -116,14 +126,17 @@
       true: 'Đã bật Chặn theo dõi & thống kê',
       false: 'Đã tắt Chặn theo dõi & thống kê'
     },
+    */
     auto_download_media: {
       true: 'Đã bật Gửi ảnh chất lượng gốc',
       false: 'Đã tắt Gửi ảnh chất lượng gốc'
     },
+    /*
     keep_unsent: {
       true: 'Đã bật Chặn thu hồi tin nhắn',
       false: 'Đã tắt Chặn thu hồi tin nhắn'
     },
+    */
     useHotkeys: {
       true: 'Đã kích hoạt phím tắt',
       false: 'Đã vô hiệu hoá phím tắt'
@@ -281,11 +294,11 @@
         block_typing: localStorage.getItem(ZADARK_ENABLED_BLOCK_TYPING_KEY) === 'true',
         block_delivered: localStorage.getItem(ZADARK_ENABLED_BLOCK_DELIVERED_KEY) === 'true',
         block_seen: localStorage.getItem(ZADARK_ENABLED_BLOCK_SEEN_KEY) === 'true',
-        block_story_seen: localStorage.getItem(ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY) === 'true',
-        block_ads: localStorage.getItem(ZADARK_ENABLED_BLOCK_ADS_KEY) === 'true',
-        block_telemetry: localStorage.getItem(ZADARK_ENABLED_BLOCK_TELEMETRY_KEY) === 'true',
-        auto_download_media: localStorage.getItem(ZADARK_ENABLED_ORIGINAL_PHOTO_KEY) === 'true',
-        keep_unsent: localStorage.getItem(ZADARK_ENABLED_KEEP_UNSENT_KEY) === 'true'
+        // block_story_seen: localStorage.getItem(ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY) === 'true',
+        // block_ads: localStorage.getItem(ZADARK_ENABLED_BLOCK_ADS_KEY) === 'true',
+        // block_telemetry: localStorage.getItem(ZADARK_ENABLED_BLOCK_TELEMETRY_KEY) === 'true',
+        auto_download_media: localStorage.getItem(ZADARK_ENABLED_ORIGINAL_PHOTO_KEY) === 'true'
+        // keep_unsent: localStorage.getItem(ZADARK_ENABLED_KEEP_UNSENT_KEY) === 'true'
       }
     },
 
@@ -624,17 +637,21 @@
       ZaDarkStorage.saveBlockSettings(blockId, isEnabled)
       this.showToast(HOTKEYS_TOAST_MESSAGE[blockId][isEnabled])
 
+      /*
       if (blockId === 'block_ads') {
         document.dispatchEvent(new CustomEvent('@ZaDark:ENABLED_BLOCK_ADS_CHANGE', { detail: isEnabled }))
       }
+      */
 
       if (blockId === 'auto_download_media') {
         document.dispatchEvent(new CustomEvent('@ZaDark:ENABLED_ORIGINAL_PHOTO_CHANGE', { detail: isEnabled }))
       }
 
+      /*
       if (blockId === 'keep_unsent') {
         document.dispatchEvent(new CustomEvent('@ZaDark:ENABLED_KEEP_UNSENT_CHANGE', { detail: isEnabled }))
       }
+      */
 
       this.showToast(COMMON_TOAST_MESSAGE.needToRestart, {
         className: 'toastify--warning',
@@ -779,11 +796,11 @@
   const switchBlockTypingElName = '#js-switch-block-typing'
   const switchBlockSeenElName = '#js-switch-block-seen'
   const switchBlockDeliveredElName = '#js-switch-block-delivered'
-  const switchBlockStorySeenElName = '#js-switch-block-story-seen'
-  const switchBlockAdsElName = '#js-switch-block-ads'
-  const switchBlockTelemetryElName = '#js-switch-block-telemetry'
+  // const switchBlockStorySeenElName = '#js-switch-block-story-seen'
+  // const switchBlockAdsElName = '#js-switch-block-ads'
+  // const switchBlockTelemetryElName = '#js-switch-block-telemetry'
   const switchAutoDownloadMediaElName = '#js-switch-auto-download-media'
-  const switchKeepUnsentElName = '#js-switch-keep-unsent'
+  // const switchKeepUnsentElName = '#js-switch-keep-unsent'
 
   const switchUseHotkeysElName = '#js-switch-use-hotkeys'
 
@@ -1102,6 +1119,7 @@
               </label>
             </div>
 
+            <!--
             <div class="zadark-switch zadark-switch--border-default">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-block-story-seen">
                 Xem <strong>Tin (Story)</strong> ẩn danh
@@ -1123,8 +1141,9 @@
                 <span class="zadark-switch__slider"></span>
               </label>
             </div>
+            -->
 
-            <div class="zadark-switch">
+            <div class="zadark-switch zadark-switch--border-default">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-auto-download-media">
                 Gửi ảnh <strong>chất lượng gốc</strong>
                 <i class="zadark-icon zadark-icon--question" data-tippy-content='Gửi ảnh ở <strong>chất lượng gốc</strong> thay vì ảnh HD bị nén, không phụ thuộc gói trả phí. Khi ảnh gốc không khả dụng, Zalo sẽ tự quay về ảnh HD.'></i>
@@ -1138,6 +1157,7 @@
               </label>
             </div>
 
+            <!--
             <div class="zadark-switch zadark-switch--border-default">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-keep-unsent">
                 Chặn <strong>Thu hồi tin nhắn</strong>
@@ -1162,6 +1182,7 @@
                 <span class="zadark-switch__slider"></span>
               </label>
             </div>
+            -->
           </div>
         </div>
       </div>
@@ -1240,7 +1261,7 @@
       'command+9',
       'command+d',
       'command+8',
-      'command+shift+8',
+      // 'command+shift+8',
 
       // Windows
       'ctrl+1',
@@ -1253,8 +1274,8 @@
       'ctrl+0',
       'ctrl+9',
       'ctrl+d',
-      'ctrl+8',
-      'ctrl+shift+8'
+      'ctrl+8'
+      // 'ctrl+shift+8'
     ].join(',')
 
     hotkeys(keys, function (event, handler) {
@@ -1331,6 +1352,7 @@
           return
         }
 
+        /*
         // Block message recall
         case 'command+shift+8':
         case 'ctrl+shift+8': {
@@ -1338,6 +1360,7 @@
           handleBlockSettingsChange('keep_unsent').bind($(switchKeepUnsentElName))()
           return
         }
+        */
 
         // Increase font size
         case 'command+0':
@@ -1410,11 +1433,11 @@
     }
 
     // Network-level blockers work with or without the injected cookie helper
-    ZaDarkUtils.setSwitch(switchBlockStorySeenElName, blockSettings.block_story_seen)
-    ZaDarkUtils.setSwitch(switchBlockAdsElName, blockSettings.block_ads)
-    ZaDarkUtils.setSwitch(switchBlockTelemetryElName, blockSettings.block_telemetry)
+    // ZaDarkUtils.setSwitch(switchBlockStorySeenElName, blockSettings.block_story_seen)
+    // ZaDarkUtils.setSwitch(switchBlockAdsElName, blockSettings.block_ads)
+    // ZaDarkUtils.setSwitch(switchBlockTelemetryElName, blockSettings.block_telemetry)
     ZaDarkUtils.setSwitch(switchAutoDownloadMediaElName, blockSettings.auto_download_media)
-    ZaDarkUtils.setSwitch(switchKeepUnsentElName, blockSettings.keep_unsent)
+    // ZaDarkUtils.setSwitch(switchKeepUnsentElName, blockSettings.keep_unsent)
 
     const useHotkeys = ZaDarkStorage.getUseHotkeys()
     ZaDarkUtils.setSwitch(switchUseHotkeysElName, useHotkeys)
@@ -1645,11 +1668,11 @@
     $(switchBlockTypingElName).on('change', handleBlockSettingsChange('block_typing'))
     $(switchBlockSeenElName).on('change', handleBlockSettingsChange('block_seen'))
     $(switchBlockDeliveredElName).on('change', handleBlockSettingsChange('block_delivered'))
-    $(switchBlockStorySeenElName).on('change', handleBlockSettingsChange('block_story_seen'))
-    $(switchBlockAdsElName).on('change', handleBlockSettingsChange('block_ads'))
-    $(switchBlockTelemetryElName).on('change', handleBlockSettingsChange('block_telemetry'))
+    // $(switchBlockStorySeenElName).on('change', handleBlockSettingsChange('block_story_seen'))
+    // $(switchBlockAdsElName).on('change', handleBlockSettingsChange('block_ads'))
+    // $(switchBlockTelemetryElName).on('change', handleBlockSettingsChange('block_telemetry'))
     $(switchAutoDownloadMediaElName).on('change', handleBlockSettingsChange('auto_download_media'))
-    $(switchKeepUnsentElName).on('change', handleBlockSettingsChange('keep_unsent'))
+    // $(switchKeepUnsentElName).on('change', handleBlockSettingsChange('keep_unsent'))
 
     $(switchUseHotkeysElName).on('change', function () {
       const isEnabled = $(this).is(':checked')
