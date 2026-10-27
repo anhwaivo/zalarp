@@ -407,6 +407,31 @@ const writePopupViewerFile = (zaloDir) => {
 }
 
 /**
+ * Recursively copy a directory from source to destination using only basic fs
+ * primitives (readdirSync, statSync, readFileSync, writeFileSync, mkdirSync)
+ * which are fully supported inside pkg snapshot virtual filesystems.
+ * Standard fs.copySync / fs.cpSync can invoke opendirSync which pkg does not intercept.
+ */
+const copyDirSync = (srcDir, destDir) => {
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true })
+  }
+
+  const items = fs.readdirSync(srcDir)
+  for (const item of items) {
+    const srcChild = path.join(srcDir, item)
+    const destChild = path.join(destDir, item)
+
+    const stat = fs.statSync(srcChild)
+    if (stat.isDirectory()) {
+      copyDirSync(srcChild, destChild)
+    } else {
+      fs.writeFileSync(destChild, fs.readFileSync(srcChild))
+    }
+  }
+}
+
+/**
   * Copies the ZaDark assets to the specified Zalo directory.
   * @param {string} zaloDir - The directory where the Zalo application is located.
  */
@@ -414,7 +439,7 @@ const copyZaDarkAssets = (zaloDir) => {
   const src = path.join(__dirname, './assets')
   const dest = path.join(zaloDir, 'app/pc-dist/zadark')
   printDebug('- copyDir:', src, '>', dest)
-  fs.copySync(src, dest)
+  copyDirSync(src, dest)
 }
 
 /**
@@ -440,8 +465,16 @@ const installZaDark = async (zaloDir) => {
   }
 
   if (fs.existsSync(ZADARK_TMP_PATH)) {
-    printDebug('- deleteDir:', ZADARK_TMP_PATH)
-    fs.rmSync(ZADARK_TMP_PATH, { recursive: true })
+    printDebug('- emptyDir:', ZADARK_TMP_PATH)
+    try {
+      fs.emptyDirSync(ZADARK_TMP_PATH)
+    } catch (e) {
+      fs.rmSync(ZADARK_TMP_PATH, { recursive: true, force: true })
+      fs.mkdirSync(ZADARK_TMP_PATH, { recursive: true })
+    }
+  } else {
+    printDebug('- createDir:', ZADARK_TMP_PATH)
+    fs.mkdirSync(ZADARK_TMP_PATH, { recursive: true })
   }
 
   if (isDirectory(appAsarPath)) {
@@ -456,9 +489,6 @@ const installZaDark = async (zaloDir) => {
     printDebug('- renameFile:', appAsarBakPath, '>', appAsarPath)
     fs.renameSync(appAsarBakPath, appAsarPath)
   }
-
-  printDebug('- createDir:', ZADARK_TMP_PATH)
-  fs.mkdirSync(ZADARK_TMP_PATH, { recursive: true })
 
   // When reinstalling, app.asar was the extracted folder (deleted above), so restore it from the backup
   if (!fs.existsSync(appAsarPath) && isFile(appAsarBakPath)) {
