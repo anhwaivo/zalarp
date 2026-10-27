@@ -3,7 +3,7 @@ const chalk = require('chalk')
 const inquirer = require('inquirer')
 
 const zadarkPC = require('./zadark-pc')
-const { print, printError, openWebsite, clearScreen, killProcesses, sleep } = require('./utils')
+const { print, printError, openWebsite, clearScreen, killProcesses, sleep, waitForProcessesToExit } = require('./utils')
 
 const {
   ZADARK_VERSION,
@@ -11,7 +11,8 @@ const {
   COMMON_ERRORS_URL,
   DEFAULT_ZALO_PATH,
   EXAMPLE_CUSTOM_ZALO_PATH,
-  DOCS_URL
+  DOCS_URL,
+  ZALO_PROCESS_NAMES
 } = require('./constants')
 
 const promptFeatureIndex = async () => {
@@ -82,7 +83,17 @@ const handleQuitZalo = async () => {
   print(chalk('>> Dang thoat Zalo PC ...'))
   killProcesses(zaloPIDs)
 
+  // `taskkill` returns as soon as the signal is delivered, but the process tree takes
+  // longer to actually go away and Windows keeps app.asar locked until it does. Wait
+  // for the processes to disappear rather than assuming a fixed delay was enough.
   await sleep(1000)
+
+  const exited = await waitForProcessesToExit(ZALO_PROCESS_NAMES)
+
+  if (!exited) {
+    print(chalk.yellowBright('>> Zalo PC van chua tat hoan toan, tiep tuc cho ...'))
+    await waitForProcessesToExit(ZALO_PROCESS_NAMES, { timeoutMs: 15000 })
+  }
 }
 
 /**

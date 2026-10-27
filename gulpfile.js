@@ -23,9 +23,12 @@ const CORE_PATH = './src/core'
 const WEB_PATH = './src/web'
 const PC_PATH = './src/pc'
 
-const getCorePath = (p) => path.join(CORE_PATH, p)
-const getWebPath = (p) => path.join(WEB_PATH, p)
-const getPCPath = (p) => path.join(PC_PATH, p)
+// gulp.src keys its base off the first path separator, and on Windows path.join() emits
+// backslashes, which made every asset land under build/pc/assets/**/src/... instead of
+// build/pc/assets/**. Use POSIX separators, which path.join would not preserve.
+const getCorePath = (p) => `${CORE_PATH}/${p.replace(/^\.\//, '')}`
+const getWebPath = (p) => `${WEB_PATH}/${p.replace(/^\.\//, '')}`
+const getPCPath = (p) => `${PC_PATH}/${p.replace(/^\.\//, '')}`
 
 const SAFARI_RESOURCES = getWebPath('./vendor/safari/ZaDark Extension/Resources')
 

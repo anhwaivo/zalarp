@@ -19,7 +19,10 @@ const PARTITION_NAME = 'persist:zalo'
 const BLOCK_STORAGE_KEYS = {
   block_typing: '@ZaDark:ENABLED_BLOCK_TYPING',
   block_delivered: '@ZaDark:ENABLED_BLOCK_DELIVERED',
-  block_seen: '@ZaDark:ENABLED_BLOCK_SEEN'
+  block_seen: '@ZaDark:ENABLED_BLOCK_SEEN',
+  block_story_seen: '@ZaDark:ENABLED_BLOCK_STORY_SEEN',
+  block_ads: '@ZaDark:ENABLED_BLOCK_ADS',
+  block_telemetry: '@ZaDark:ENABLED_BLOCK_TELEMETRY'
 }
 
 const FILTER_DOMAINS = [
@@ -38,61 +41,117 @@ const FILTER_PATHS = [
 
   // Seen
   '/api/message/seenv2?*',
-  '/api/group/seenv2?*'
+  '/api/group/seenv2?*',
+
+  // Story seen (View stories anonymously)
+  '/api/social/story/seen*'
 ]
 
 const BLOCK_FILTER = {
   urls: getFilterUrls(FILTER_DOMAINS, FILTER_PATHS)
 }
 
+// Ported from NexAlloy-XES `adtima/*` and `tracking/*` patches.
+// Zalo PC reaches the Adtima ad SDK and the ads tracker over HTTP from the
+// renderer session, so the Android hooks become request filters here.
+const ADS_FILTER = {
+  urls: [
+    ...getFilterUrls(['*://*.adtimaserver.vn'], ['/*']),
+    ...getFilterUrls(['*://*.admicro.vn'], ['/*']),
+    ...getFilterUrls(FILTER_DOMAINS, ['/api/ads/*', '/api/message/ads/*', '/api/ads/show/*'])
+  ]
+}
+
+// Ported from NexAlloy-XES `telemetry/*` patches (Firebase Analytics,
+// Crashlytics, Advertising ID lookup).
+const TELEMETRY_FILTER = {
+  urls: [
+    '*://*.google-analytics.com/*',
+    '*://*.app-measurement.com/*',
+    '*://*.crashlytics.com/*',
+    '*://firebase-settings*',
+    '*://firebaselogging*',
+    '*://*.googlesyndication.com/*',
+    '*://*.doubleclick.net/*',
+    '*://*.googleadservices.com/*'
+  ]
+}
+
 app.whenReady().then(() => {
   const _blockSettings = {
     block_typing: false,
     block_delivered: false,
-    block_seen: false
+    block_seen: false,
+    block_story_seen: false,
+    block_ads: false,
+    block_telemetry: false
   }
 
-  session.fromPartition(PARTITION_NAME).webRequest.onBeforeRequest(BLOCK_FILTER, (details, callback) => {
+  const zaloSession = session.fromPartition(PARTITION_NAME)
+
+  zaloSession.webRequest.onBeforeRequest(BLOCK_FILTER, (details, callback) => {
     // Typing
     if (_blockSettings.block_typing && (details.url.includes('api/message/typing') || details.url.includes('api/group/typing'))) {
       if (DEBUG) console.log('ZaDarkPC: block_typing', details.url)
       callback({ cancel: true })
+      return
     }
 
     // Delivered
     if (_blockSettings.block_delivered && (details.url.includes('api/message/deliveredv2') || details.url.includes('api/e2ee/pc/t/message/delivered') || details.url.includes('api/group/deliveredv2'))) {
       if (DEBUG) console.log('ZaDarkPC: block_delivered', details.url)
       callback({ cancel: true })
+      return
     }
 
     // Seen
     if (_blockSettings.block_seen && (details.url.includes('api/message/seenv2') || details.url.includes('api/group/seenv2'))) {
       if (DEBUG) console.log('ZaDarkPC: block_seen', details.url)
       callback({ cancel: true })
+      return
+    }
+
+    // Story seen
+    if (_blockSettings.block_story_seen && details.url.includes('api/social/story/seen')) {
+      if (DEBUG) console.log('ZaDarkPC: block_story_seen', details.url)
+      callback({ cancel: true })
+      return
     }
 
     callback({ cancel: false })
   })
 
-  session.fromPartition(PARTITION_NAME).cookies.get({ domain: 'zadark.com' })
+  zaloSession.webRequest.onBeforeRequest(ADS_FILTER, (details, callback) => {
+    if (!_blockSettings.block_ads) {
+      callback({ cancel: false })
+      return
+    }
+
+    if (DEBUG) console.log('ZaDarkPC: block_ads', details.url)
+    callback({ cancel: true })
+  })
+
+  zaloSession.webRequest.onBeforeRequest(TELEMETRY_FILTER, (details, callback) => {
+    if (!_blockSettings.block_telemetry) {
+      callback({ cancel: false })
+      return
+    }
+
+    if (DEBUG) console.log('ZaDarkPC: block_telemetry', details.url)
+    callback({ cancel: true })
+  })
+
+  zaloSession.cookies.get({ domain: 'zadark.com' })
     .then((cookies = []) => {
       if (DEBUG) console.log('ZaDarkPC: Cookies/zadark.com', cookies)
 
       cookies.forEach((cookie) => {
-        // Typing
-        if (cookie.name === BLOCK_STORAGE_KEYS.block_typing) {
-          _blockSettings.block_typing = cookie.value === 'true'
+        const settingKey = Object.keys(BLOCK_STORAGE_KEYS).find((key) => BLOCK_STORAGE_KEYS[key] === cookie.name)
+        if (!settingKey) {
+          return
         }
 
-        // Delivered
-        if (cookie.name === BLOCK_STORAGE_KEYS.block_delivered) {
-          _blockSettings.block_delivered = cookie.value === 'true'
-        }
-
-        // Seen
-        if (cookie.name === BLOCK_STORAGE_KEYS.block_seen) {
-          _blockSettings.block_seen = cookie.value === 'true'
-        }
+        _blockSettings[settingKey] = cookie.value === 'true'
       })
 
       if (DEBUG) console.log('ZaDarkPC: _blockSettings', _blockSettings)

@@ -4,11 +4,9 @@ const asar = require('@electron/asar')
 const HTMLParser = require('node-html-parser')
 const glob = require('glob')
 
-const { printDebug, printError, isDirectory, isFile } = require('./utils')
+const { print, printDebug, printError, isDirectory, isFile, getProcessIdsByName, waitForProcessesToExit, sleepSync } = require('./utils')
 
 const { PLATFORM, IS_MAC, IS_WIN, OS_NAME, ZADARK_VERSION, ZADARK_TMP_PATH, ZALO_PROCESS_NAMES, ZADARK_API_DOMAIN } = require('./constants')
-
-const psList = require('./packages/ps-list')
 
 const getVersionFromPath = (str) => {
   const match = str.match(/Zalo-(\d+\.\d+\.\d+)/)
@@ -62,13 +60,7 @@ const getZaloResDirList = (customZaloPath) => {
  */
 const getZaloProcessIds = async () => {
   try {
-    const processes = await psList()
-
-    const pids = processes
-      .filter((process) => typeof process.name === 'string' && ZALO_PROCESS_NAMES.includes(process.name.toLowerCase()))
-      .map((process) => process.pid)
-
-    return pids
+    return await getProcessIdsByName(ZALO_PROCESS_NAMES)
   } catch (error) {
     throw new Error('Vui long tat Zalo PC truoc khi cai dat ZaDark (E007).')
   }
@@ -220,6 +212,13 @@ const writeIndexFile = (zaloDir) => {
     },
     {
       where: 'beforeend',
+      // Must be the first ZaDark script: it installs the webpack capture before
+      // render.js boots Zalo's module registry (see zadark-patches.js).
+      html: '<script src="zadark/js/zadark-patches.min.js"></script>',
+      htmlElement: bodyElement
+    },
+    {
+      where: 'beforeend',
       html: '<script src="zadark/js/zadark-shared.min.js"></script>',
       htmlElement: bodyElement
     },
@@ -231,6 +230,11 @@ const writeIndexFile = (zaloDir) => {
     {
       where: 'beforeend',
       html: '<script src="zadark/js/zadark-zconv.min.js"></script>',
+      htmlElement: bodyElement
+    },
+    {
+      where: 'beforeend',
+      html: '<script src="zadark/js/zadark-ads.min.js"></script>',
       htmlElement: bodyElement
     },
     {
@@ -460,9 +464,37 @@ const installZaDark = async (zaloDir) => {
     fs.renameSync(appAsarBakPath, appAsarPath)
   }
 
+  // Zalo is an Electron app with several child processes. `taskkill` (and therefore
+  // handleQuitZalo) resolves as soon as the signal is delivered, but Windows keeps
+  // app.asar locked until the last process has really gone. Renaming or reading the
+  // archive while that is still happening fails, or appears to hang, so wait it out
+  // first and surface a clear error instead of a frozen screen.
+  const exited = await waitForProcessesToExit(ZALO_PROCESS_NAMES)
+
+  if (!exited) {
+    throw new Error('Zalo PC van dang chay. Vui long tat hoan toan Zalo PC roi cai dat lai ZaDark (E010).')
+  }
+
   printDebug('- extractAsar:', appAsarPath, '>', appDirTmpPath)
-  asar.uncacheAll()
-  asar.extractAll(appAsarPath, appDirTmpPath)
+
+  const archiveSizeMb = Math.round(fs.statSync(appAsarPath).size / 1024 / 1024)
+
+  // `asar.extractAll` is synchronous: it blocks the event loop for the whole
+  // extraction and cannot report progress. Flush this line first so the user sees
+  // why the app looks frozen instead of assuming it crashed.
+  print(`>> Dang giai nen app.asar (${archiveSizeMb} MB). Qua trinh nay co the mat vai phut, vui long khong tat cua so ...`)
+  sleepSync(50)
+
+  const extractStartedAt = Date.now()
+
+  try {
+    asar.uncacheAll()
+    asar.extractAll(appAsarPath, appDirTmpPath)
+  } catch (error) {
+    throw new Error(`Khong the giai nen "app.asar" tai ${appAsarPath}: ${error.message} (E011).`)
+  }
+
+  printDebug('- extractAsar done in', Math.round((Date.now() - extractStartedAt) / 1000) + 's')
 
   copyZaDarkAssets(ZADARK_TMP_PATH)
   writeIndexFile(ZADARK_TMP_PATH)

@@ -10,6 +10,10 @@ dist/
 .env*
 tools/macos/notarytool_log.json
 
+# Local scratch & dev
+_*
+package-lock.json
+
 # Xcode
 ## User settings
 xcuserdata/
