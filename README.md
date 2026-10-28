@@ -1,13 +1,12 @@
 <div align="center">
   <!-- <img src=".github/zadark-icon.png" width="128" alt="ZaLarp" /> -->
 
-  <h1>ZaLarp - ZaDark with more features ig</h1>
+  <h1>ZaLarp - <a href="https://github.com/ncdai/zadark">ZaDark</a> with more features ig</h1>
 
   <p>QOL for zalor, hiện tại chỉ có build windows th :)</p>
 </div>
 
 ---
-
 ## Features
 
 - Giữ toàn bộ tính năng của zadark stock
