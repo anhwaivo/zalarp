@@ -12,7 +12,8 @@
 
 - Giữ toàn bộ tính năng của zadark stock
 - Gửi ảnh original mà không cần mua zcloud
-- *Comming soon: tự lưu tin nhắn thu hồi, ảnh không hết hạn
+- Chặn thu hồi tin nhắn: giữ tin nhắn người khác đã thu hồi (`Ctrl+Shift+8` / `⇧⌘8`)
+- *Comming soon: ảnh không hết hạn
 
 ## Build (Windows)
 

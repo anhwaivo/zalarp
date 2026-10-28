@@ -331,6 +331,250 @@
   )
 
   /* ------------------------------------------------------------------ *
+   * Feature: block message recall (anti-recall)
+   * Prevents others from wiping recalled messages from cache & display
+   * ------------------------------------------------------------------ */
+
+  const MAX_SNAPSHOT_ENTRIES = 5000
+  const messageSnapshots = new Map()
+
+  const snapshotMessage = (o) => {
+    if (!o) return
+    const id = o.msgId || o.globalMsgId
+    if (!id) return
+    const key = String(id)
+    if (messageSnapshots.has(key)) return
+    if (messageSnapshots.size >= MAX_SNAPSHOT_ENTRIES) {
+      const oldestKey = messageSnapshots.keys().next().value
+      messageSnapshots.delete(oldestKey)
+    }
+    let msg = o.message
+    if (msg && typeof msg === 'object') {
+      try {
+        msg = JSON.parse(JSON.stringify(msg))
+      } catch (e) {}
+    }
+    messageSnapshots.set(key, {
+      msgType: o.msgType,
+      originMsgType: o.originMsgType,
+      message: msg,
+      e2eeStatus: o.e2eeStatus,
+      v: o.v,
+      quote: o.quote ? JSON.parse(JSON.stringify(o.quote)) : undefined
+    })
+  }
+
+  const getSnapshot = (id) => {
+    if (!id) return null
+    return messageSnapshots.get(String(id)) || null
+  }
+
+  const isSentByMe = (m) => {
+    if (!m) return false
+    return m.fromUid === '0' || m.fromUid === 0 || m.uidFrom === '0' || m.uidFrom === 0
+  }
+
+  register(
+    'anti-recall/converter',
+    (source) => source.indexOf('convertToRecalled(t){') !== -1 && source.indexOf('convertToDelEveryone(') !== -1,
+    (id) => {
+      const module = requireModule(id)
+      const helper = module.default
+      if (!helper || typeof helper.convertToRecalled !== 'function') {
+        throw new Error('convertToRecalled missing')
+      }
+
+      const origRecalled = helper.convertToRecalled
+      helper.convertToRecalled = function (t) {
+        if (!readFlag(KEY_KEEP_UNSENT) || isSentByMe(t)) {
+          return origRecalled.apply(this, arguments)
+        }
+        snapshotMessage(t)
+        const s = getSnapshot(t && (t.msgId || t.globalMsgId))
+        if (s && t) {
+          t.msgType = s.msgType
+          t.originMsgType = s.originMsgType
+          t.message = s.message
+          t.e2eeStatus = s.e2eeStatus
+          t._zadarkRecalled = true
+        }
+        return t
+      }
+
+      const origDelEveryone = helper.convertToDelEveryone
+      if (typeof origDelEveryone === 'function') {
+        helper.convertToDelEveryone = function (t) {
+          if (!readFlag(KEY_KEEP_UNSENT) || isSentByMe(t)) {
+            return origDelEveryone.apply(this, arguments)
+          }
+          snapshotMessage(t)
+          const s = getSnapshot(t && (t.msgId || t.globalMsgId))
+          if (s && t) {
+            t.msgType = s.msgType
+            t.originMsgType = s.originMsgType
+            t.message = s.message
+            t.e2eeStatus = s.e2eeStatus
+            t._zadarkRecalled = true
+          }
+          return t
+        }
+      }
+    }
+  )
+
+  register(
+    'anti-recall/redux-undo',
+    (source) => source.indexOf('mergeUndo(e,t){') !== -1 && source.indexOf('mergeUndoMulti(e,t){') !== -1,
+    (id) => {
+      const module = requireModule(id)
+      const helper = module.b || module.default
+      if (!helper || typeof helper.mergeUndo !== 'function') {
+        throw new Error('mergeUndo missing')
+      }
+
+      const origMergeUndo = helper.mergeUndo
+      helper.mergeUndo = function (e, t) {
+        if (!readFlag(KEY_KEEP_UNSENT) || isSentByMe(e)) {
+          return origMergeUndo.apply(this, arguments)
+        }
+        snapshotMessage(e)
+        const res = origMergeUndo.apply(this, arguments)
+        if (res && e) {
+          res.msgType = e.msgType
+          res.originMsgType = e.originMsgType
+          res.message = e.message
+          res.e2eeStatus = e.e2eeStatus
+          if (e.quote && res.quote) {
+            res.quote.cliMsgType = e.quote.cliMsgType
+            res.quote.msg = e.quote.msg
+          }
+          res._zadarkRecalled = true
+        }
+        return res
+      }
+
+      const origMergeUndoMulti = helper.mergeUndoMulti
+      if (typeof origMergeUndoMulti === 'function') {
+        helper.mergeUndoMulti = function (e, t) {
+          if (!readFlag(KEY_KEEP_UNSENT) || isSentByMe(e)) {
+            return origMergeUndoMulti.apply(this, arguments)
+          }
+          snapshotMessage(e)
+          const res = origMergeUndoMulti.apply(this, arguments)
+          if (res && e) {
+            res.msgType = e.msgType
+            res.originMsgType = e.originMsgType
+            res.message = e.message
+            res.e2eeStatus = e.e2eeStatus
+            if (e.quote && res.quote) {
+              res.quote.cliMsgType = e.quote.cliMsgType
+              res.quote.msg = e.quote.msg
+            }
+            res._zadarkRecalled = true
+          }
+          return res
+        }
+      }
+    }
+  )
+
+  register(
+    'anti-recall/cache-undo',
+    (source) => source.indexOf('undoMessages(e){') !== -1 && source.indexOf('editContentMessages(e){') !== -1 && source.indexOf('get messageCache()') !== -1,
+    (id) => {
+      const module = requireModule(id)
+      const collector = module.default
+      if (!collector || typeof collector.init !== 'function') {
+        throw new Error('collector default export missing')
+      }
+
+      const hookCache = (cache) => {
+        if (!cache) return
+        const proto = Object.getPrototypeOf(cache)
+        if (!proto || typeof proto.undoMessages !== 'function') return
+        if (proto._zadarkHooked) return
+        proto._zadarkHooked = true
+
+        const origUndo = proto.undoMessages
+        proto.undoMessages = function (e) {
+          if (!readFlag(KEY_KEEP_UNSENT)) {
+            return origUndo.apply(this, arguments)
+          }
+
+          try {
+            const items = Object.values(e || {})
+            for (let i = 0; i < items.length; i++) {
+              const n = items[i]
+              if (!n || !n.toUid) continue
+              const convCache = this._cache && this._cache.get(n.toUid)
+              const list = convCache && convCache.getAllMessagesInCache && convCache.getAllMessagesInCache()
+              if (!list) continue
+              for (let s = list.length - 1; s >= 0; s--) {
+                const m = list[s]
+                if (m && (String(m.msgId) === String(n.globalMsgId) || String(m.msgId) === String(n.msgId))) {
+                  if (!isSentByMe(m)) {
+                    snapshotMessage(m)
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            debug('pre-snapshot undoMessages error', err)
+          }
+
+          const res = origUndo.apply(this, arguments)
+
+          try {
+            const items = Object.values(e || {})
+            for (let i = 0; i < items.length; i++) {
+              const n = items[i]
+              if (!n || !n.toUid) continue
+              const s = getSnapshot(n.globalMsgId) || getSnapshot(n.msgId)
+              if (!s) continue
+              const convCache = this._cache && this._cache.get(n.toUid)
+              const list = convCache && convCache.getAllMessagesInCache && convCache.getAllMessagesInCache()
+              if (!list) continue
+              for (let k = list.length - 1; k >= 0; k--) {
+                const m = list[k]
+                if (m && (String(m.msgId) === String(n.globalMsgId) || String(m.msgId) === String(n.msgId))) {
+                  if (!isSentByMe(m)) {
+                    m.msgType = s.msgType
+                    m.originMsgType = s.originMsgType
+                    m.message = s.message
+                    m.e2eeStatus = s.e2eeStatus
+                    m._zadarkRecalled = true
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            debug('post-restore undoMessages error', err)
+          }
+
+          return res
+        }
+      }
+
+      const origInit = collector.init
+      collector.init = function (userId) {
+        const res = origInit.apply(this, arguments)
+        try {
+          if (this.messageCache) {
+            hookCache(this.messageCache)
+          }
+        } catch (err) {
+          debug('hookCache on init error', err)
+        }
+        return res
+      }
+
+      if (collector.messageCache) {
+        hookCache(collector.messageCache)
+      }
+    }
+  )
+
+  /* ------------------------------------------------------------------ *
    * boot
    * ------------------------------------------------------------------ */
 
