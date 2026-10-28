@@ -1230,7 +1230,7 @@
 
   const popupFooterHTML = `
     <div class="zadark-popup__footer">
-      <a href="https://github.com/fghjikolol/zalarp2" target="_blank" title="Zalarp" class="zadark-publisher">
+      <a href="https://github.com/anhwaivo/zalarp" target="_blank" title="Zalarp" class="zadark-publisher">
         <span class="zadark-publisher__name">Zalarp</span>
       </a>
     </div>
