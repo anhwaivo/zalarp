@@ -1,5 +1,7 @@
 <div align="center">
   <!-- <img src=".github/zadark-icon.png" width="128" alt="ZaLarp" /> -->
+  <img width="680" height="329" alt="image" src="https://github.com/user-attachments/assets/db99fb87-97aa-4243-8e95-6e16ba932668" />
+
 
   <h1>ZaLarp - <a href="https://github.com/ncdai/zadark">ZaDark</a> with more features ig</h1>
 
