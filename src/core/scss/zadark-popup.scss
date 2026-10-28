@@ -224,6 +224,13 @@ body:not(.zadark--use-hotkeys) {
       height: 18px;
     }
 
+    &__logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 18px;
+      color: var(--zadark-neutral-base);
+    }
+
     &__pro {
       display: flex;
       align-items: center;
@@ -300,6 +307,11 @@ body:not(.zadark--use-hotkeys) {
       width: auto;
       height: 12px;
       margin-left: 8px;
+    }
+
+    &__name {
+      font-weight: 700;
+      line-height: 20px;
     }
   }
 
@@ -682,6 +694,13 @@ body:not(.zadark--use-hotkeys) {
     border: 1px solid var(--zadark-border-base);
     border-radius: var(--zadark-border-radius-base);
     margin-bottom: 16px;
+
+    &__title {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--zadark-border-base);
+      font-weight: 700;
+      color: var(--zadark-neutral-base);
+    }
 
     &__body {
       padding: 8px 12px;
