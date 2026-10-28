@@ -909,7 +909,7 @@
   const popupHeaderHTML = `
     <div class="zadark-popup__header">
       <div class="zadark-popup__header__logo">
-        <img src="zadark/images/zadark-lockup.svg" alt="ZaDark" class="zadark-popup__header__logo-img" />
+        <span class="zadark-popup__header__logo-text">Zalarp</span>
       </div>
 
       <div class="zadark-popup__header__menu-list">
@@ -1123,7 +1123,14 @@
                 <span class="zadark-switch__slider"></span>
               </label>
             </div>
+          </div>
+        </div>
+      </div>
 
+      <div class="zadark-panel">
+        <div class="zadark-panel__title">Zalarp</div>
+        <div class="zadark-panel__body">
+          <div class="zadark-switch__list">
             <!--
             <div class="zadark-switch zadark-switch--border-default">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-block-story-seen">
@@ -1223,9 +1230,8 @@
 
   const popupFooterHTML = `
     <div class="zadark-popup__footer">
-      <a href="https://quaric.com?utm_source=zadark-pc" target="_blank" title="ZaDark by Quaric" class="zadark-publisher">
-        <span class="zadark-publisher__by">ZaDark by</span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 64" fill="none" class="zadark-publisher__lockup"><path fill="currentColor" fill-rule="evenodd" d="M264 64V54h-12.998A24.892 24.892 0 0 0 256 39V25c0-13.807-11.193-25-25-25h-46c-13.807 0-25 11.193-25 25v14c0 13.807 11.193 25 25 25h79Zm-79-54c-8.284 0-15 6.716-15 15v14c0 8.284 6.716 15 15 15h46.019C239.294 53.99 246 47.278 246 39V25c0-8.284-6.716-15-15-15h-46Z" clip-rule="evenodd"/><path fill="currentColor" d="M282 0v39c0 8.284 6.716 15 15 15h37V0h10v64h-47c-13.807 0-25-11.193-25-25V0h10Z"/><path fill="currentColor" fill-rule="evenodd" d="M415 0h-39v10h39c7.948 0 14.452 6.182 14.967 14H380c-11.046 0-20 8.954-20 20s8.954 20 20 20h60V25c0-13.807-11.193-25-25-25Zm-35 34h50v20h-50c-5.523 0-10-4.477-10-10s4.477-10 10-10Z" clip-rule="evenodd"/><path fill="currentColor" d="M456 25c0-13.807 11.193-25 25-25h45v10h-45c-8.284 0-15 6.716-15 15v39h-10V25ZM544 64V0h-10v64h10ZM570 25c0-8.284 6.716-15 15-15h55V0h-55c-13.807 0-25 11.193-25 25v14c0 13.807 11.193 25 25 25h55V54h-55c-8.284 0-15-6.716-15-15V25ZM72 0l44.313 15.783c15.583 5.172 15.583 27.263 0 32.434L72 64V53.338l41.161-14.66c6.416-2.13 6.416-11.226 0-13.356L78.518 12.75 56 64 11.687 48.218c-15.583-5.172-15.583-27.263 0-32.435L56 0v10.662l-41.161 14.66c-6.416 2.13-6.416 11.226 0 13.356L49.482 51.25 72 0Z"/></svg>
+      <a href="https://github.com/fghjikolol/zalarp2" target="_blank" title="Zalarp" class="zadark-publisher">
+        <span class="zadark-publisher__name">Zalarp</span>
       </a>
     </div>
   `
