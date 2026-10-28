@@ -575,6 +575,373 @@
   )
 
   /* ------------------------------------------------------------------ *
+   * Feature: keep recalled messages across chat switches and restarts
+   *
+   * The hooks above only patch what is in memory: the recall still reaches the
+   * database, the search index and the media cache, so the message comes back
+   * recalled once the conversation is reloaded from disk (leave the chat and come
+   * back, or restart Zalo).
+   *
+   * Every incoming message batch — direct, group (a copy with `groupMsgs` moved
+   * to `messages`), history and `processLastMessages` — goes through the receive
+   * pipeline singleton's `_processChatMessages(batch, ...)`. Dropping incoming
+   * `chat.undo` events there means nothing downstream ever sees the recall, so the
+   * stored original is never rewritten. The ids of dropped recalls are kept in
+   * localStorage so the UI can still mark those messages as recalled.
+   *
+   * Limit: history that Zalo re-downloads from the server (a fresh login, or
+   * scrolling past what is stored locally) arrives already recalled.
+   * ------------------------------------------------------------------ */
+
+  const KEY_UNSENT_IDS = '@ZaDark:UNSENT_MSGS'
+  const KEY_UNSENT_PEEK = '@ZaDark:KEEP_UNSENT_PEEK'
+  const UNSENT_CHANGE_EVENT = '@ZaDark:UNSENT_CHANGE'
+  // Keys, not messages: each recalled message uses up to two (global id, client id).
+  const MAX_UNSENT_IDS = 10000
+
+  const unsentStore = (() => {
+    let cache = null
+
+    const read = () => {
+      if (cache) return cache
+      try {
+        const stored = JSON.parse(window.localStorage.getItem(KEY_UNSENT_IDS) || '{}')
+        cache = stored && typeof stored === 'object' ? stored : {}
+      } catch (e) {
+        cache = {}
+      }
+      return cache
+    }
+
+    const write = (ids) => {
+      cache = ids
+      try {
+        window.localStorage.setItem(KEY_UNSENT_IDS, JSON.stringify(ids))
+      } catch (e) {}
+    }
+
+    return {
+      add (recalls) {
+        const ids = Object.assign({}, read())
+        const now = Date.now()
+        for (const recall of recalls) {
+          const content = (recall && recall.content) || {}
+          if (content.globalMsgId && String(content.globalMsgId) !== '0') ids['g' + content.globalMsgId] = now
+          if (content.cliMsgId) ids['c' + content.cliMsgId] = now
+        }
+
+        // Evict the oldest first.
+        const keys = Object.keys(ids)
+        if (keys.length > MAX_UNSENT_IDS) {
+          keys
+            .sort((a, b) => ids[a] - ids[b])
+            .slice(0, keys.length - MAX_UNSENT_IDS)
+            .forEach((key) => delete ids[key])
+        }
+
+        write(ids)
+        try {
+          document.dispatchEvent(new CustomEvent(UNSENT_CHANGE_EVENT))
+        } catch (e) {}
+      },
+      has (globalMsgId, cliMsgId) {
+        const ids = read()
+        return !!((globalMsgId && ids['g' + globalMsgId]) || (cliMsgId && ids['c' + cliMsgId]))
+      },
+      count: () => Object.keys(read()).length
+    }
+  })()
+
+  register(
+    'anti-recall/fetcher',
+    (source) =>
+      /_processChatMessages\(\w+,\w+,\w+,\w+\)\{/.test(source) &&
+      /processLastMessages\(\.\.\.\w+\)\{/.test(source) &&
+      source.indexOf('"chat.undo"') !== -1,
+    (id) => {
+      const module = requireModule(id)
+      const candidates = [module, module.default]
+      for (const key of Object.keys(module)) {
+        try {
+          candidates.push(module[key])
+        } catch (e) {}
+      }
+
+      const fetcher = candidates.find(
+        (candidate) => candidate && typeof candidate === 'object' && typeof candidate._processChatMessages === 'function'
+      )
+      if (!fetcher) throw new Error('fetcher export missing')
+      if (fetcher._zadarkHooked) return
+      fetcher._zadarkHooked = true
+
+      // An own property, so Zalo's internal `this._processChatMessages(...)` calls
+      // (group and history batches) land here too.
+      const original = fetcher._processChatMessages
+      fetcher._processChatMessages = function (batch) {
+        try {
+          if (batch && Array.isArray(batch.messages) && readFlag(KEY_KEEP_UNSENT)) {
+            const kept = []
+            const dropped = []
+            for (const m of batch.messages) {
+              // Incoming recalls only: uidFrom "0" is me, those stay with Zalo.
+              if (m && m.msgType === 'chat.undo' && m.content && String(m.uidFrom) !== '0') dropped.push(m)
+              else kept.push(m)
+            }
+            if (dropped.length) {
+              // Same object the poll callback hands to its other consumers.
+              batch.messages = kept
+              unsentStore.add(dropped)
+              debug('kept', dropped.length, 'recalled message(s)')
+            }
+          }
+        } catch (err) {
+          // Fall through to Zalo's own handling.
+          debug('fetcher filter error', err)
+        }
+        return original.apply(this, arguments)
+      }
+    }
+  )
+
+  /* ------------------------------------------------------------------ *
+   * Recalled-message badge
+   *
+   * A message row is `div.chat-message#bb_msg_id_<cliMsgId>`. Rows whose id is in
+   * the store get a red "Đã thu hồi" badge anchored right of the bubble (`.card`).
+   * Hovering the badge overlays a Zalo-styled `.card.card--undo` so the user can
+   * see how the message looks recalled; nothing in Zalo's data changes.
+   * localStorage[KEY_UNSENT_PEEK] = "false" turns the hover overlay off.
+   * ------------------------------------------------------------------ */
+
+  const startUnsentBadges = () => {
+    const ROW_PREFIX = 'bb_msg_id_'
+    const ROW_SELECTOR = '[id^="bb_msg_id_"]'
+    const ROW_CLASS = 'zadark-unsent'
+    const BADGE_CLASS = 'zadark-unsent-badge'
+    const GHOST_CLASS = 'zadark-peek-ghost'
+    const CSS =
+      '.zadark-unsent-badge{flex:0 0 auto;align-self:center;margin-left:8px;padding:0 8px;border-radius:8px;' +
+      'font:500 11px/16px sans-serif;white-space:nowrap;background:#e5484d;color:#fff;opacity:.9;cursor:default;user-select:none;z-index:1}' +
+      '.zadark-unsent-badge:hover{opacity:1}'
+    // Zalo's own recalled bubble wording (English / Vietnamese), matched on visible
+    // text because not every recalled bubble carries `.card--undo`.
+    const RECALLED_TEXT = /(message (has been )?recalled|tin nhắn đã (được )?thu hồi)/i
+
+    // Last recalled wording seen on screen, so the overlay matches the UI language.
+    let seenRecalledText = ''
+
+    const realNodes = (row, selector) =>
+      Array.prototype.filter.call(row.querySelectorAll(selector), (el) => !el.classList.contains(GHOST_CLASS))
+
+    const isRecalledByZalo = (row) => {
+      const undo = realNodes(row, '.card--undo')
+      if (undo.length) {
+        const text = (undo[0].textContent || '').trim()
+        if (text) seenRecalledText = text
+        return true
+      }
+      // Our own overlay says "Message recalled": do not read it as Zalo's.
+      if (row._zadarkPeek) return false
+      const text = (row.textContent || '').replace(/\s+/g, ' ').trim().normalize('NFC')
+      // A recalled row is just the phrase (plus maybe a time); long text is a real message.
+      if (text.length > 80) return false
+      const match = RECALLED_TEXT.exec(text)
+      if (!match) return false
+      seenRecalledText = match[0].charAt(0).toUpperCase() + match[0].slice(1)
+      return true
+    }
+
+    const recalledText = () => {
+      for (const card of document.querySelectorAll('.card--undo')) {
+        if (card.classList.contains(GHOST_CLASS)) continue
+        const text = (card.textContent || '').trim()
+        if (text) return text
+      }
+      return seenRecalledText || 'Message recalled'
+    }
+
+    const unpeek = (row) => {
+      const peek = row._zadarkPeek
+      if (!peek) return
+      row._zadarkPeek = null
+      if (peek.ghost.parentNode) peek.ghost.parentNode.removeChild(peek.ghost)
+      peek.bubble.style.visibility = peek.prevVisibility
+    }
+
+    const peek = (row) => {
+      if (row._zadarkPeek) return
+      try {
+        if (window.localStorage.getItem(KEY_UNSENT_PEEK) === 'false') return
+      } catch (e) {}
+      const bubble = realNodes(row, '.card')[0]
+      if (!bubble || !bubble.parentNode) return
+
+      const ghost = document.createElement('div')
+      ghost.className = 'card card--undo ' + GHOST_CLASS
+      ghost.style.position = 'absolute'
+      ghost.style.left = bubble.offsetLeft + 'px'
+      ghost.style.top = bubble.offsetTop + 'px'
+      ghost.style.pointerEvents = 'none'
+      const label = document.createElement('span')
+      label.textContent = recalledText()
+      ghost.appendChild(label)
+      bubble.parentNode.insertBefore(ghost, bubble.nextSibling)
+
+      // visibility, not display: the bubble keeps its space so the badge stays under the pointer.
+      row._zadarkPeek = { ghost, bubble, prevVisibility: bubble.style.visibility }
+      bubble.style.visibility = 'hidden'
+    }
+
+    const badgeOf = (row) => row.querySelector('.' + BADGE_CLASS)
+
+    // The hover toolbar (reply / forward / more) appears right of the bubble with
+    // unknown markup, so it is found by geometry: probe points right of the bubble
+    // and take the right edge of any button-sized element that is not ours. Only the
+    // row under the pointer is probed. Returns how far (px) the badge must shift.
+    let pointerY = -1
+    const toolbarReach = (row, bubble, badge) => {
+      if (typeof document.elementsFromPoint !== 'function') return 0
+      const rowRect = row.getBoundingClientRect()
+      if (pointerY < rowRect.top - 4 || pointerY > rowRect.bottom + 4) return 0
+
+      const rect = bubble.getBoundingClientRect()
+      let max = 0
+      for (const y of [rect.top + 6, (rect.top + rect.bottom) / 2, rect.bottom - 6]) {
+        for (let x = rect.right + 2; x <= rect.right + 260; x += 10) {
+          for (const el of document.elementsFromPoint(x, y)) {
+            if (el === badge || el.classList.contains(GHOST_CLASS)) continue
+            if (bubble.contains(el) || el.contains(bubble) || el.contains(badge)) continue
+            const r = el.getBoundingClientRect()
+            if (r.width < 8 || r.height < 8 || r.width > 180 || r.height > 70) continue
+            if (r.right > max) max = r.right
+          }
+        }
+      }
+      return max > rect.right ? max - rect.right : 0
+    }
+
+    const place = (row) => {
+      const badge = badgeOf(row)
+      if (!badge) return
+      const bubble = realNodes(row, '.card')[0]
+      // Stickers etc. have no bubble: the badge stays a plain flex child of the row.
+      if (!bubble || !bubble.parentNode) return
+
+      if (typeof ResizeObserver === 'function' && row._zadarkObserved !== bubble) {
+        if (row._zadarkResize) row._zadarkResize.disconnect()
+        row._zadarkObserved = bubble
+        row._zadarkResize = new ResizeObserver(() => place(row))
+        row._zadarkResize.observe(bubble)
+      }
+
+      // Same parent as the bubble, so offsetLeft/offsetTop share a containing block.
+      if (badge.parentNode !== bubble.parentNode) bubble.parentNode.insertBefore(badge, bubble.nextSibling)
+
+      const width = bubble.offsetWidth
+      const height = bubble.offsetHeight
+      if (!width) {
+        badge.style.display = 'none'
+        return
+      }
+
+      // While peeking the badge stays put, or it would slide out from under the pointer.
+      const shift = row._zadarkPeek ? row._zadarkShift || 0 : toolbarReach(row, bubble, badge)
+      row._zadarkShift = shift
+
+      badge.style.display = ''
+      badge.style.position = 'absolute'
+      badge.style.margin = '0'
+      badge.style.left = bubble.offsetLeft + width + shift + 8 + 'px'
+      // Centred, but near the top on tall media.
+      badge.style.top = bubble.offsetTop + Math.max(0, Math.min((height - 16) / 2, 16)) + 'px'
+    }
+
+    const ensureBadge = (row) => {
+      if (!badgeOf(row)) {
+        const badge = document.createElement('span')
+        badge.className = BADGE_CLASS
+        badge.textContent = 'Đã thu hồi'
+        badge.title = 'Tin nhắn đã bị thu hồi (ZaDark giữ lại). Rê chuột vào đây để xem dạng đã thu hồi.'
+        badge.addEventListener('mouseenter', () => peek(row))
+        badge.addEventListener('mouseleave', () => unpeek(row))
+        row.appendChild(badge)
+      }
+      place(row)
+    }
+
+    const removeBadge = (row) => {
+      unpeek(row)
+      const badge = badgeOf(row)
+      if (badge && badge.parentNode) badge.parentNode.removeChild(badge)
+      if (row._zadarkResize) {
+        row._zadarkResize.disconnect()
+        row._zadarkResize = null
+        row._zadarkObserved = null
+      }
+      row.classList.remove(ROW_CLASS)
+    }
+
+    const mark = (el) => {
+      if (!el || el.nodeType !== 1 || !el.id || el.id.indexOf(ROW_PREFIX) !== 0) return
+      // Never flag a row that already shows Zalo's own recalled bubble.
+      const kept = unsentStore.has(null, el.id.slice(ROW_PREFIX.length)) && !isRecalledByZalo(el)
+      if (kept) {
+        el.classList.add(ROW_CLASS)
+        ensureBadge(el)
+      } else if (el.classList.contains(ROW_CLASS)) {
+        // Rows are recycled by the virtual list.
+        removeBadge(el)
+      }
+    }
+
+    const scan = (root) => {
+      if (!root || root.nodeType !== 1) return
+      mark(root)
+      root.querySelectorAll(ROW_SELECTOR).forEach(mark)
+    }
+
+    const style = document.createElement('style')
+    style.id = 'zadark-unsent-style'
+    style.textContent = CSS
+    document.head.appendChild(style)
+
+    scan(document.body)
+
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes') {
+          mark(mutation.target)
+          continue
+        }
+        const row = mutation.target && mutation.target.closest && mutation.target.closest(ROW_SELECTOR)
+        if (row) mark(row)
+        mutation.addedNodes.forEach(scan)
+      }
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['id'] })
+
+    document.addEventListener(UNSENT_CHANGE_EVENT, () => scan(document.body))
+
+    const placeAll = () => document.querySelectorAll('.' + ROW_CLASS).forEach(place)
+
+    // Zalo shows the toolbar a moment after the pointer arrives, with no further
+    // mouse event, so each (throttled) move also re-places at +150ms and +400ms.
+    let lastKick = 0
+    let followUps = []
+    const kick = (event) => {
+      if (event && typeof event.clientY === 'number') pointerY = event.clientY
+      const now = Date.now()
+      if (now - lastKick < 60) return
+      lastKick = now
+      placeAll()
+      followUps.forEach(window.clearTimeout)
+      followUps = [window.setTimeout(placeAll, 150), window.setTimeout(placeAll, 400)]
+    }
+    document.addEventListener('mousemove', kick)
+    document.addEventListener('mouseover', kick)
+    window.addEventListener('resize', placeAll)
+  }
+
+  /* ------------------------------------------------------------------ *
    * boot
    * ------------------------------------------------------------------ */
 
@@ -586,6 +953,18 @@
 
   window.addEventListener('load', sweep)
   startPolling()
+
+  const startBadgesSafely = () => {
+    try {
+      startUnsentBadges()
+    } catch (e) {
+      debug('unsent badges failed', e)
+    }
+  }
+  if (document.body) startBadgesSafely()
+  else document.addEventListener('DOMContentLoaded', startBadgesSafely)
+
+  window.ZaDarkUnsent = unsentStore
 
   window.ZaDarkPatches = {
     sweep,
