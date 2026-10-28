@@ -11,8 +11,8 @@
 
 - Giữ toàn bộ tính năng của zadark stock
 - Gửi ảnh original mà không cần mua zcloud
-- Giữ tin nhắn / hình ảnh người khác đã thu hồi
-- ảnh không hết hạn(beta, down từ actions, chỉ recover được 1 số nếu bạn hên :))), không thể recover những file trên server zalo đã xóa)
+- Giữ tin nhắn / hình ảnh người khác đã thu hồi (chỉ khi đang mở zalo)
+- ảnh không hết hạn(chỉ recover được 1 số nếu bạn hên :))), không thể recover những file trên server zalo đã xóa)
 
 ## Build (Windows)
 
