@@ -53,6 +53,7 @@
   const ZADARK_ENABLED_BLOCK_TELEMETRY_KEY = '@ZaDark:ENABLED_BLOCK_TELEMETRY'
   const ZADARK_ENABLED_ORIGINAL_PHOTO_KEY = '@ZaDark:ENABLED_ORIGINAL_PHOTO'
   const ZADARK_ENABLED_KEEP_UNSENT_KEY = '@ZaDark:ENABLED_KEEP_UNSENT'
+  const ZADARK_ENABLED_KEEP_EXPIRED_MEDIA_KEY = '@ZaDark:ENABLED_KEEP_EXPIRED_MEDIA'
   const BLOCK_STORAGE_KEYS = {
     block_typing: ZADARK_ENABLED_BLOCK_TYPING_KEY,
     block_delivered: ZADARK_ENABLED_BLOCK_DELIVERED_KEY,
@@ -61,7 +62,8 @@
     // block_ads: ZADARK_ENABLED_BLOCK_ADS_KEY,
     // block_telemetry: ZADARK_ENABLED_BLOCK_TELEMETRY_KEY,
     auto_download_media: ZADARK_ENABLED_ORIGINAL_PHOTO_KEY,
-    keep_unsent: ZADARK_ENABLED_KEEP_UNSENT_KEY
+    keep_unsent: ZADARK_ENABLED_KEEP_UNSENT_KEY,
+    keep_expired_media: ZADARK_ENABLED_KEEP_EXPIRED_MEDIA_KEY
   }
   const BLOCK_IDS = [
     'block_typing',
@@ -71,7 +73,8 @@
     // 'block_ads',
     // 'block_telemetry',
     'auto_download_media',
-    'keep_unsent'
+    'keep_unsent',
+    'keep_expired_media'
   ]
 
   const ZADARK_USE_HOTKEYS = '@ZaDark:USE_HOTKEYS'
@@ -134,6 +137,10 @@
     keep_unsent: {
       true: 'Đã bật Chặn thu hồi tin nhắn',
       false: 'Đã tắt Chặn thu hồi tin nhắn'
+    },
+    keep_expired_media: {
+      true: 'Đã bật Chặn file & ảnh hết hạn',
+      false: 'Đã tắt Chặn file & ảnh hết hạn'
     },
     useHotkeys: {
       true: 'Đã kích hoạt phím tắt',
@@ -296,7 +303,8 @@
         // block_ads: localStorage.getItem(ZADARK_ENABLED_BLOCK_ADS_KEY) === 'true',
         // block_telemetry: localStorage.getItem(ZADARK_ENABLED_BLOCK_TELEMETRY_KEY) === 'true',
         auto_download_media: localStorage.getItem(ZADARK_ENABLED_ORIGINAL_PHOTO_KEY) === 'true',
-        keep_unsent: localStorage.getItem(ZADARK_ENABLED_KEEP_UNSENT_KEY) === 'true'
+        keep_unsent: localStorage.getItem(ZADARK_ENABLED_KEEP_UNSENT_KEY) === 'true',
+        keep_expired_media: localStorage.getItem(ZADARK_ENABLED_KEEP_EXPIRED_MEDIA_KEY) === 'true'
       }
     },
 
@@ -797,6 +805,7 @@
   // const switchBlockTelemetryElName = '#js-switch-block-telemetry'
   const switchAutoDownloadMediaElName = '#js-switch-auto-download-media'
   const switchKeepUnsentElName = '#js-switch-keep-unsent'
+  const switchKeepExpiredMediaElName = '#js-switch-keep-expired-media'
 
   const switchUseHotkeysElName = '#js-switch-use-hotkeys'
 
@@ -1167,6 +1176,17 @@
               </label>
             </div>
 
+            <div class="zadark-switch zadark-switch--border-default">
+              <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-keep-expired-media">
+                Chặn <strong>File &amp; ảnh hết hạn</strong>
+                <i class="zadark-icon zadark-icon--question" data-tippy-content='File, ảnh, video và tin nhắn thoại cũ sẽ <strong>không</strong> bị đánh dấu "đã hết hạn" và vẫn có thể tải về. File đã bị máy chủ Zalo xoá thật sự thì vẫn không tải được.'></i>
+              </label>
+              <label class="zadark-switch__checkbox">
+                <input class="zadark-switch__input" type="checkbox" id="js-switch-keep-expired-media">
+                <span class="zadark-switch__slider"></span>
+              </label>
+            </div>
+
             <!--
             <div class="zadark-switch">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-block-telemetry">
@@ -1432,6 +1452,7 @@
     // ZaDarkUtils.setSwitch(switchBlockTelemetryElName, blockSettings.block_telemetry)
     ZaDarkUtils.setSwitch(switchAutoDownloadMediaElName, blockSettings.auto_download_media)
     ZaDarkUtils.setSwitch(switchKeepUnsentElName, blockSettings.keep_unsent)
+    ZaDarkUtils.setSwitch(switchKeepExpiredMediaElName, blockSettings.keep_expired_media)
 
     const useHotkeys = ZaDarkStorage.getUseHotkeys()
     ZaDarkUtils.setSwitch(switchUseHotkeysElName, useHotkeys)
@@ -1667,6 +1688,7 @@
     // $(switchBlockTelemetryElName).on('change', handleBlockSettingsChange('block_telemetry'))
     $(switchAutoDownloadMediaElName).on('change', handleBlockSettingsChange('auto_download_media'))
     $(switchKeepUnsentElName).on('change', handleBlockSettingsChange('keep_unsent'))
+    $(switchKeepExpiredMediaElName).on('change', handleBlockSettingsChange('keep_expired_media'))
 
     $(switchUseHotkeysElName).on('change', function () {
       const isEnabled = $(this).is(':checked')

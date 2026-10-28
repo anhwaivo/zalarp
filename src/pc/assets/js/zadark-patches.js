@@ -85,8 +85,16 @@
 
       // Future lazy chunks arrive through this same push, so observing it lets us
       // re-run the module sweep exactly when new factories are registered.
-      stack.push = function () {
+      // webpack calls this synchronously after installing a chunk's factories and
+      // before any `import()` continuation runs, so factory wraps happen here, while
+      // the new modules are guaranteed not to be instantiated yet.
+      stack.push = function (chunk) {
         const result = push.apply(this, arguments)
+        try {
+          wrapFactories(chunk && chunk[1] ? Object.keys(chunk[1]) : null)
+        } catch (e) {
+          debug('factory wrap failed', e)
+        }
         scheduleSweep()
         return result
       }
@@ -211,6 +219,88 @@
     if (pollTimer) {
       window.clearInterval(pollTimer)
       pollTimer = null
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * factory wraps
+   *
+   * webpack 4 defines ES-module exports as non-configurable getters
+   * (`__webpack_require__.d`), so `req(id).fn = f` silently does nothing for a
+   * named export. A function exported that way can only be replaced while its
+   * module is defined: the factory in `req.m` is wrapped so that the `.d` calls it
+   * makes install our getter instead. Patching at definition (rather than swapping
+   * `module.exports` afterwards) also covers modules that grabbed the exports
+   * object early through a circular import.
+   * ------------------------------------------------------------------ */
+
+  const factoryPatches = []
+  const factoryScannedIds = new Set()
+
+  /**
+   * @param {string} name    for diagnostics
+   * @param {(source: string) => boolean} match  stable-shape test on a factory body
+   * @param {Object<string, (original: Function) => Function>} overrides  by export name
+   */
+  const registerFactory = (name, match, overrides) => {
+    factoryPatches.push({ name, match, overrides, applied: false, error: null })
+  }
+
+  const wrapFactory = (id, overrides) => {
+    const original = req.m[id]
+    req.m[id] = function (module, exports, require) {
+      const patchedRequire = function () {
+        return require.apply(this, arguments)
+      }
+      Object.keys(require).forEach((key) => {
+        patchedRequire[key] = require[key]
+      })
+      patchedRequire.d = function (target, name, getter) {
+        const override = target === exports && overrides[name]
+        if (!override) return require.d.apply(this, arguments)
+        let wrapped = null
+        return require.d.call(this, target, name, () => wrapped || (wrapped = override(getter())))
+      }
+      return original.call(this, module, exports, patchedRequire)
+    }
+  }
+
+  /** Wraps matching factories among `ids` (all known factories when omitted). */
+  const wrapFactories = (ids) => {
+    if (!req || !req.m) return
+    const pending = factoryPatches.filter((patch) => !patch.applied)
+    if (!pending.length) return
+
+    for (const id of ids || Object.keys(req.m)) {
+      if (factoryScannedIds.has(id) || !req.m[id]) continue
+      factoryScannedIds.add(id)
+
+      let source
+      try {
+        source = String(req.m[id])
+      } catch (e) {
+        continue
+      }
+
+      for (const patch of pending) {
+        if (patch.applied) continue
+        let matched = false
+        try {
+          matched = patch.match(source) === true
+        } catch (e) {}
+        if (!matched) continue
+
+        if (req.c && req.c[id]) {
+          // Instantiated before we saw it: its exports are sealed.
+          patch.error = 'module ' + id + ' already instantiated'
+          debug('too late to wrap', patch.name)
+          continue
+        }
+        wrapFactory(id, patch.overrides)
+        patch.applied = true
+        patch.error = null
+        debug('wrapped', patch.name)
+      }
     }
   }
 
@@ -942,12 +1032,79 @@
   }
 
   /* ------------------------------------------------------------------ *
+   * Feature: keep expired files & media downloadable
+   *
+   * Every message-level expiry check on PC — `isExpired`/`isExpiredAll` on media
+   * items, `isExpireMsg`, the download service's "Download message: expired"
+   * throw, the media viewer blanking the URL, "Show in folder" — reduces to
+   *
+   *   getMessageStatus[Sync](msg).status === 'none'
+   *
+   * from a single module whose status is a bitmask of
+   * { none: 0, clouded: 1, local: 2, server_temp: 4, not_check: 8, auto_downloading: 16 }.
+   * A 'none' result is upgraded to `server_temp` ("still on Zalo's server"), which
+   * sends every consumer down its normal download-from-URL path. Real results are
+   * left alone: claiming `local` would make Zalo open a file that is not on disk
+   * and skip the unzip of downloaded folders, and `clouded` without `server_temp`
+   * is what the Zalo Cloud upsell keys off.
+   *
+   * Limit: this only lifts the client-side gate. A file the server has really
+   * deleted still fails to download, and Zalo shows its own download error.
+   * ------------------------------------------------------------------ */
+
+  const STATUS_FLAG_SERVER_TEMP = 4
+
+  const unexpireStatus = (result) => {
+    if (!result || result.status !== 'none' || !readFlag(KEY_KEEP_EXPIRED_MEDIA)) return result
+    return { status: 'server_temp', flag: (result.flag | 0) | STATUS_FLAG_SERVER_TEMP }
+  }
+
+  registerFactory(
+    'keep-expired-media/status',
+    // The defining module, not the many importers: only it exports both names and
+    // falls back to the temp-status lookup.
+    (source) =>
+      source.indexOf('"getMessageStatusSync"') !== -1 &&
+      source.indexOf('"getMessageStatus"') !== -1 &&
+      source.indexOf('getTempStatusSync(') !== -1,
+    {
+      getMessageStatusSync: (original) =>
+        function () {
+          return unexpireStatus(original.apply(this, arguments))
+        },
+      getMessageStatus: (original) =>
+        async function () {
+          return unexpireStatus(await original.apply(this, arguments))
+        }
+    }
+  )
+
+  register(
+    'keep-expired-media/send-to-me',
+    // Large files sent to "My Cloud" expire on their own clock (size limit and
+    // duration from server config), independent of the status above.
+    (source) => source.indexOf('static isExpiredOnCloud(') !== -1,
+    (id) => {
+      const module = requireModule(id)
+      const helper = module.default
+      if (!helper || typeof helper.isExpiredOnCloud !== 'function') throw new Error('isExpiredOnCloud missing')
+
+      const original = helper.isExpiredOnCloud
+      helper.isExpiredOnCloud = function () {
+        if (readFlag(KEY_KEEP_EXPIRED_MEDIA)) return false
+        return original.apply(this, arguments)
+      }
+    }
+  )
+
+  /* ------------------------------------------------------------------ *
    * boot
    * ------------------------------------------------------------------ */
 
   captureWebpackRequire()
 
   if (req) {
+    wrapFactories()
     sweep()
   }
 
@@ -969,9 +1126,17 @@
   window.ZaDarkPatches = {
     sweep,
     status: () =>
-      patches.map((patch) => ({
-        name: patch.name,
-        applied: patch.applied
-      }))
+      patches
+        .map((patch) => ({
+          name: patch.name,
+          applied: patch.applied
+        }))
+        .concat(
+          factoryPatches.map((patch) => ({
+            name: patch.name,
+            applied: patch.applied,
+            error: patch.error
+          }))
+        )
   }
 })()
