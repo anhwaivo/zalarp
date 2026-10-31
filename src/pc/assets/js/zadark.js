@@ -1093,7 +1093,6 @@
       </div>
 
       <div class="zadark-panel">
-        <div class="zadark-panel__title">Zalarp</div>
         <div class="zadark-panel__body">
           <div class="zadark-switch__list">
             <div class="zadark-switch zadark-switch--border-default">
@@ -1137,14 +1136,11 @@
           </div>
         </div>
       </div>
-          </div>
-        </div>
-      </div>
 
       <div class="zadark-panel">
         <div class="zadark-panel__body">
           <div class="zadark-switch__list">
-            <div class="zadark-switch">
+            <div class="zadark-switch zadark-switch--border-default">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-use-hotkeys">
                 Sử dụng phím tắt
               </label>
