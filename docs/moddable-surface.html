@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZaLarp Moddable Surface</title>
+<style>
+:root{
+  --bg:#0f1115;--panel:#171a21;--panel2:#1d2129;--line:#2a2f3a;
+  --tx:#e6e9ef;--tx2:#9aa3b2;--tx3:#6b7383;
+  --acc:#6ea8fe;--ok:#3fb97c;--warn:#e0a93e;--bad:#e5484d;--dim:#8b6fd8;
+  --mono:ui-monospace,'Cascadia Code',Consolas,monospace;
+}
+@media (prefers-color-scheme: light){:root{--bg:#f5f6f8;--panel:#fff;--panel2:#f0f2f5;--line:#dde1e8;--tx:#1a1f27;--tx2:#4d5663;--tx3:#8a93a1;}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.6 -apple-system,'Segoe UI',Roboto,sans-serif;padding:0}
+.wrap{max-width:880px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.sub{color:var(--tx2);margin-top:6px;font-size:14px}
+h2{font-size:17px;font-weight:700;margin:34px 0 4px;display:flex;align-items:center;gap:8px}
+.note{color:var(--tx2);font-size:13px;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px}
+.card h3{font-size:14.5px;font-weight:650;margin-bottom:5px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.card p{color:var(--tx2);font-size:13.5px}
+.card code, code{font-family:var(--mono);font-size:.86em;background:var(--panel2);border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:var(--tx)}
+.tag{font:600 10.5px/1.6 var(--mono);padding:2px 8px;border-radius:5px;letter-spacing:.02em}
+.t-sig{background:rgba(110,168,254,.14);color:var(--acc)}
+.t-net{background:rgba(139,111,216,.16);color:var(--dim)}
+.t-dom{background:rgba(63,185,124,.14);color:var(--ok)}
+.t-css{background:rgba(224,169,62,.14);color:var(--warn)}
+.src{color:var(--tx3);font-size:12px;margin-top:7px;font-family:var(--mono)}
+.src b{color:var(--tx2);font-weight:600}
+.pill{font:600 10px/1.9 var(--mono);padding:2px 9px;border-radius:99px;letter-spacing:.03em}
+.p-done{background:rgba(63,185,124,.15);color:var(--ok)}
+.p-todo{background:rgba(110,168,254,.15);color:var(--acc)}
+.p-no{background:rgba(229,72,77,.15);color:var(--bad)}
+.p-tested{background:rgba(229,72,77,.15);color:var(--bad);outline:1px solid rgba(229,72,77,.4)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+th{text-align:left;color:var(--tx3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:7px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--tx2);vertical-align:top}
+td:first-child{color:var(--tx);font-weight:550;white-space:nowrap}
+.tblwrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.why{background:var(--panel2);border-left:3px solid var(--acc);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--tx2);margin:14px 0}
+.why.no{border-left-color:var(--bad)}
+.why code{background:none;border:none;padding:0;color:var(--tx)}
+.small{font-size:12px;color:var(--tx3)}
+ul.tight{margin:8px 0 0;padding-left:19px}
+ul.tight li{margin-bottom:4px;color:var(--tx2);font-size:13.5px}
+hr{border:none;border-top:1px solid var(--line);margin:36px 0}
+.arch{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
+.arch>div{flex:1;min-width:250px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.arch h4{font-size:12.5px;font-weight:650;color:var(--acc);margin-bottom:4px}
+.arch p{font-size:12.5px;color:var(--tx2)}
+.verdict{background:rgba(229,72,77,.08);border:1px solid rgba(229,72,77,.3);border-radius:8px;padding:9px 13px;font-size:12.5px;color:var(--tx2);margin-top:8px}
+.verdict b{color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>ZaLarp — what's actually moddable</h1>
+<p class="sub">Client-side gates in Zalo PC <b>26.10.20</b>, verified against the live bundle AND tested against the real server. "Client gate is patchable" ≠ "the feature works" — the server re-validates anything that lives on its side.</p>
+
+<div class="arch">
+  <div>
+    <h4>Signature sweep <span class="tag t-sig" style="margin-left:4px">page world</span></h4>
+    <p><code>zadark-patches.js</code> captures <code>__webpack_require__</code>, sweeps <code>req.m</code> by shape. Reaches <b>app logic</b>.</p>
+  </div>
+  <div>
+    <h4>webRequest filter <span class="tag t-net" style="margin-left:4px">main proc</span></h4>
+    <p><code>zadark-main.js</code> hooks <code>session.webRequest</code> on <code>persist:zalo</code>. Reaches <b>HTTP calls</b>.</p>
+  </div>
+  <div>
+    <h4>DOM / CSS <span class="tag t-dom" style="margin-left:4px">page world</span></h4>
+    <p>React refs, <code>MutationObserver</code>, body classes, injected styles. Reaches the <b>UI</b>.</p>
+  </div>
+</div>
+
+<h2>Works — shipped <span class="pill p-done">confirmed</span></h2>
+<p class="note">Client-side gates. These produce real effects because the resource is on the client.</p>
+
+<div class="tblwrap"><table>
+<tr><th>Feature</th><th>Hook point</th><th>Type</th></tr>
+<tr><td>Dark / light / custom theme + fonts</td><td>CSS <code>data-theme</code>, injected stylesheets</td><td><span class="tag t-css">css</span></td></tr>
+<tr><td>Original-quality photo send</td><td><code>getCurrentPhotoResolutionMode()</code> + <code>file_photo_limit</code> pin</td><td><span class="tag t-sig">sig</span></td></tr>
+<tr><td>Keep recalled messages</td><td><code>convertToRecalled</code>/<code>mergeUndo(Multi)</code>/<code>undoMessages</code>/<code>_processChatMessages</code></td><td><span class="tag t-sig">sig</span></td></tr>
+<tr><td>Recalled badge + hover peek</td><td><code>MutationObserver</code> on <code>bb_msg_id_*</code> rows</td><td><span class="tag t-dom">dom</span></td></tr>
+<tr><td>Block typing / delivered / seen</td><td><code>webRequest</code> cancel on <code>typing|deliveredv2|seenv2</code></td><td><span class="tag t-net">net</span></td></tr>
+<tr><td>Message translate</td><td><code>zadark-translate.js</code></td><td><span class="tag t-dom">dom</span></td></tr>
+<tr><td>Custom reaction bar + favorites</td><td><code>zadark-reaction.js</code></td><td><span class="tag t-dom">dom</span></td></tr>
+<tr><td>Hide latest msg / avatar / conv name / thread</td><td>body classes + CSS</td><td><span class="tag t-css">css</span></td></tr>
+<tr><td>Hotkeys, font size</td><td>libs (<code>hotkeys-js</code>, <code>intro.js</code>)</td><td><span class="tag t-dom">dom</span></td></tr>
+</table></div>
+
+<div class="why"><b>See others' seen-status while hiding yours — already built.</b> <code>block_seen</code> cancels only the <i>outgoing</i> <code>/api/message/seenv2</code> receipt; incoming "they saw it" arrives over the socket on a different channel. Enable it: they never see your "Đã xem", you still see theirs.</div>
+
+<h2>Tested — server-enforced <span class="pill p-tested">proven</span></h2>
+<p class="note">The client gate lifts (request gets sent / UI stops blocking), but Zalo's server re-validates and rejects. These produce nothing real — verified by actual testing, not theory.</p>
+
+<div class="card"><h3>Message pin limit <span class="tag t-sig">sig</span></h3>
+<p>Client pin of <code>limit_pin_messages</code> (5 → 9999) was built and tested — still capped at <b>3</b>. The cap doesn't even read that config key: the pin UI shows <code>pinLimitNumber</code>, a per-conversation value the server pushes. The client never consulted the patched default.</p>
+<div class="verdict"><b>TESTED — server-side.</b> Cap came from server state (3, not the local default of 5). Client patch produces nothing.</div></div>
+
+<div class="card"><h3>Send all file types <span class="tag t-sig">sig</span></h3>
+<p>Emptying <code>unsupportFile</code> (exe/cmd/bat/com/lnk/vbs) lifts the client-side <code>isValidFile</code> reject so the upload request sends — but the server independently refuses dangerous extensions.</p>
+<div class="verdict"><b>TESTED — server-side.</b> Client gate lifted, upload still refused by server.</div></div>
+
+<div class="card"><h3>Recall window (edit/unsend own msgs past cutoff) <span class="tag t-sig">sig</span></h3>
+<p>Pinned <code>recallMessageMaxTime</code> (300s) + <code>time_enable_edit_undo_msg</code> (120s) on the <code>Ze</code>/<code>NDmK</code> config. The client <i>did</i> fire <code>/api/message/undo</code> past the window — server answered <b>error 112</b> (<code>isServerUndefinedError</code>).</p>
+<div class="verdict"><b>TESTED — server-side.</b> Window is <code>settings.chat.time_undomsg</code>, server-supplied and server-rechecked.</div></div>
+
+<div class="card"><h3>zCloud storage / quota <span class="tag t-sig">sig</span></h3>
+<p><code>isPaidUser()</code> reads <code>this.plan</code> on <code>CloudConfigv2</code> — a server response. Every upload re-checks quota server-side. A client flip would only fake the badge.</p>
+<div class="verdict"><b>Server-side by design.</b> Same shape as the three proven cases — the resource lives on Zalo's infra.</div></div>
+
+<div class="card"><h3>zBusiness / OA features <span class="tag t-sig">sig</span></h3>
+<p><code>isBusinessAccount</code> reads <code>bizInfo.pkgId&gt;0</code> — a server-stamped profile field. <code>isOAVerified</code> reads the profile cache. Cosmetic claim only; OA tools stay gated.</p>
+<div class="verdict"><b>Server-side by design.</b></div></div>
+
+<div class="card"><h3>Calls / video calls <span class="tag t-sig">sig</span></h3>
+<p><code>enableCall</code>/<code>enableVideoCall</code> are set from <code>settings.chat.enable_call</code> — server config. Signaling (<code>zcall.initCall</code>, <code>onCallSignal</code>) is server-mediated. Button can be shown; the call can't complete.</p>
+<div class="verdict"><b>Server-side by design.</b></div></div>
+
+<h2>Still open — not yet tested <span class="pill p-todo">maybe</span></h2>
+<p class="note">Client-side gates that MIGHT work because the resource is on the client — but unverified. Test before trusting.</p>
+
+<div class="card"><h3>Keep expired media (local cache only) <span class="tag t-sig">sig</span></h3>
+<p>Expiry is a client timestamp compare (<code>expired_time&lt;Date.now()</code>, <code>isExpireMsg</code>, <code>FORWARD_ERR_CODE.EXPIRED</code>) — but the timestamp is server-stamped on the message. Only helps for media <b>already cached locally</b>; a CDN re-fetch arrives gone. Whether Zalo keeps the local file after expiry is unverified — if it purges the file, this is cosmetic like the rest.</p>
+<div class="src">flag KEY_KEEP_EXPIRED_MEDIA declared but unused in zadark-patches.js</div></div>
+
+<div class="card"><h3>Message length / file-count limits <span class="tag t-sig">sig</span></h3>
+<p><code>limitMsgByte</code> (3KB), <code>maxNumberOfFile</code> (9), <code>limit_pin_messages</code>, <code>numSearchResultMessage</code> are client constants — but user testing showed file-count isn't really capped (sent 15), so these defaults may not be the live gate at all. Server may enforce the real limits; untested which ones are client-only.</p>
+<div class="src">all in NDmK/Ze config — verify against a live server before building</div></div>
+
+<hr>
+
+<h2>The rule that emerged</h2>
+<ul class="tight">
+<li><b>If the resource lives on the client</b> (theme, message cache, UI gates, quality-mode flags) → moddable.</li>
+<li><b>If the resource lives on Zalo's server</b> (quota, business features, call signaling, server-stamped limits/timestamps) → client patch only changes what the request <i>attempts</i>; the server re-validates and rejects. err 112 / silent cap / refused upload — same outcome every time.</li>
+<li><b>Read the real source of a limit before patching.</b> <code>limit_pin_messages=5</code> looked like the pin cap but the UI capped at 3 — the live value was <code>pinLimitNumber</code> from server state. Patching the wrong constant does nothing.</li>
+</ul>
+<p class="small" style="margin-top:18px">Surveyed against Zalo PC 26.10.20 bundles; three of the "tested" entries were confirmed by live server attempts (112 error, pin still capping at 3, file upload refused). Webpack ids shift per release — all hooks are shape-matched and degrade to no-ops.</p>
+
+</div>
+</body>
+</html>

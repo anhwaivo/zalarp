@@ -48,9 +48,6 @@
   const ZADARK_ENABLED_BLOCK_TYPING_KEY = '@ZaDark:ENABLED_BLOCK_TYPING'
   const ZADARK_ENABLED_BLOCK_DELIVERED_KEY = '@ZaDark:ENABLED_BLOCK_DELIVERED'
   const ZADARK_ENABLED_BLOCK_SEEN_KEY = '@ZaDark:ENABLED_BLOCK_SEEN'
-  const ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY = '@ZaDark:ENABLED_BLOCK_STORY_SEEN'
-  const ZADARK_ENABLED_BLOCK_ADS_KEY = '@ZaDark:ENABLED_BLOCK_ADS'
-  const ZADARK_ENABLED_BLOCK_TELEMETRY_KEY = '@ZaDark:ENABLED_BLOCK_TELEMETRY'
   const ZADARK_ENABLED_ORIGINAL_PHOTO_KEY = '@ZaDark:ENABLED_ORIGINAL_PHOTO'
   const ZADARK_ENABLED_KEEP_UNSENT_KEY = '@ZaDark:ENABLED_KEEP_UNSENT'
   const ZADARK_ENABLED_KEEP_EXPIRED_MEDIA_KEY = '@ZaDark:ENABLED_KEEP_EXPIRED_MEDIA'
@@ -58,9 +55,6 @@
     block_typing: ZADARK_ENABLED_BLOCK_TYPING_KEY,
     block_delivered: ZADARK_ENABLED_BLOCK_DELIVERED_KEY,
     block_seen: ZADARK_ENABLED_BLOCK_SEEN_KEY,
-    // block_story_seen: ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY,
-    // block_ads: ZADARK_ENABLED_BLOCK_ADS_KEY,
-    // block_telemetry: ZADARK_ENABLED_BLOCK_TELEMETRY_KEY,
     auto_download_media: ZADARK_ENABLED_ORIGINAL_PHOTO_KEY,
     keep_unsent: ZADARK_ENABLED_KEEP_UNSENT_KEY,
     keep_expired_media: ZADARK_ENABLED_KEEP_EXPIRED_MEDIA_KEY
@@ -69,9 +63,6 @@
     'block_typing',
     'block_delivered',
     'block_seen',
-    // 'block_story_seen',
-    // 'block_ads',
-    // 'block_telemetry',
     'auto_download_media',
     'keep_unsent',
     'keep_expired_media'
@@ -116,20 +107,6 @@
       true: 'Đã bật Ẩn trạng thái Đã xem',
       false: 'Đã tắt Ẩn trạng thái Đã xem'
     },
-    /*
-    block_story_seen: {
-      true: 'Đã bật Xem Tin (Story) ẩn danh',
-      false: 'Đã tắt Xem Tin (Story) ẩn danh'
-    },
-    block_ads: {
-      true: 'Đã bật Chặn quảng cáo',
-      false: 'Đã tắt Chặn quảng cáo'
-    },
-    block_telemetry: {
-      true: 'Đã bật Chặn theo dõi & thống kê',
-      false: 'Đã tắt Chặn theo dõi & thống kê'
-    },
-    */
     auto_download_media: {
       true: 'Đã bật Gửi ảnh chất lượng gốc',
       false: 'Đã tắt Gửi ảnh chất lượng gốc'
@@ -299,9 +276,6 @@
         block_typing: localStorage.getItem(ZADARK_ENABLED_BLOCK_TYPING_KEY) === 'true',
         block_delivered: localStorage.getItem(ZADARK_ENABLED_BLOCK_DELIVERED_KEY) === 'true',
         block_seen: localStorage.getItem(ZADARK_ENABLED_BLOCK_SEEN_KEY) === 'true',
-        // block_story_seen: localStorage.getItem(ZADARK_ENABLED_BLOCK_STORY_SEEN_KEY) === 'true',
-        // block_ads: localStorage.getItem(ZADARK_ENABLED_BLOCK_ADS_KEY) === 'true',
-        // block_telemetry: localStorage.getItem(ZADARK_ENABLED_BLOCK_TELEMETRY_KEY) === 'true',
         auto_download_media: localStorage.getItem(ZADARK_ENABLED_ORIGINAL_PHOTO_KEY) === 'true',
         keep_unsent: localStorage.getItem(ZADARK_ENABLED_KEEP_UNSENT_KEY) === 'true',
         keep_expired_media: localStorage.getItem(ZADARK_ENABLED_KEEP_EXPIRED_MEDIA_KEY) === 'true'
@@ -643,12 +617,6 @@
       ZaDarkStorage.saveBlockSettings(blockId, isEnabled)
       this.showToast(HOTKEYS_TOAST_MESSAGE[blockId][isEnabled])
 
-      /*
-      if (blockId === 'block_ads') {
-        document.dispatchEvent(new CustomEvent('@ZaDark:ENABLED_BLOCK_ADS_CHANGE', { detail: isEnabled }))
-      }
-      */
-
       if (blockId === 'auto_download_media') {
         document.dispatchEvent(new CustomEvent('@ZaDark:ENABLED_ORIGINAL_PHOTO_CHANGE', { detail: isEnabled }))
       }
@@ -800,9 +768,6 @@
   const switchBlockTypingElName = '#js-switch-block-typing'
   const switchBlockSeenElName = '#js-switch-block-seen'
   const switchBlockDeliveredElName = '#js-switch-block-delivered'
-  // const switchBlockStorySeenElName = '#js-switch-block-story-seen'
-  // const switchBlockAdsElName = '#js-switch-block-ads'
-  // const switchBlockTelemetryElName = '#js-switch-block-telemetry'
   const switchAutoDownloadMediaElName = '#js-switch-auto-download-media'
   const switchKeepUnsentElName = '#js-switch-keep-unsent'
   const switchKeepExpiredMediaElName = '#js-switch-keep-expired-media'
@@ -1131,30 +1096,6 @@
         <div class="zadark-panel__title">Zalarp</div>
         <div class="zadark-panel__body">
           <div class="zadark-switch__list">
-            <!--
-            <div class="zadark-switch zadark-switch--border-default">
-              <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-block-story-seen">
-                Xem <strong>Tin (Story)</strong> ẩn danh
-                <i class="zadark-icon zadark-icon--question" data-tippy-content='Bạn xem Tin của bạn bè mà không xuất hiện trong danh sách người xem. Cảm xúc và trả lời Tin vẫn được gửi đi bình thường.'></i>
-              </label>
-              <label class="zadark-switch__checkbox">
-                <input class="zadark-switch__input" type="checkbox" id="js-switch-block-story-seen">
-                <span class="zadark-switch__slider"></span>
-              </label>
-            </div>
-
-            <div class="zadark-switch zadark-switch--border-default">
-              <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-block-ads">
-                Chặn <strong>Quảng cáo</strong>
-                <i class="zadark-icon zadark-icon--question" data-tippy-content='Chặn máy chủ quảng cáo Adtima và các điểm đặt quảng cáo của Zalo. Tin nhắn từ Tài khoản chính thức không bị ảnh hưởng. Nếu Nhật ký hiển thị lạ, hãy thử tắt chức năng này.'></i>
-              </label>
-              <label class="zadark-switch__checkbox">
-                <input class="zadark-switch__input" type="checkbox" id="js-switch-block-ads">
-                <span class="zadark-switch__slider"></span>
-              </label>
-            </div>
-            -->
-
             <div class="zadark-switch zadark-switch--border-default">
               <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-auto-download-media">
                 Gửi ảnh <strong>chất lượng gốc</strong>
@@ -1193,19 +1134,9 @@
                 <span class="zadark-switch__slider"></span>
               </label>
             </div>
-
-            <!--
-            <div class="zadark-switch">
-              <label class="zadark-switch__label zadark-switch__label--helper" for="js-switch-block-telemetry">
-                Chặn <strong>Theo dõi &amp; Thống kê</strong>
-                <i class="zadark-icon zadark-icon--question" data-tippy-content='Chặn Firebase Analytics, Crashlytics và các dịch vụ quảng cáo của Google. Thông báo đẩy và tính năng của Zalo không bị ảnh hưởng.'></i>
-              </label>
-              <label class="zadark-switch__checkbox">
-                <input class="zadark-switch__input" type="checkbox" id="js-switch-block-telemetry">
-                <span class="zadark-switch__slider"></span>
-              </label>
-            </div>
-            -->
+          </div>
+        </div>
+      </div>
           </div>
         </div>
       </div>
@@ -1453,9 +1384,6 @@
     }
 
     // Network-level blockers work with or without the injected cookie helper
-    // ZaDarkUtils.setSwitch(switchBlockStorySeenElName, blockSettings.block_story_seen)
-    // ZaDarkUtils.setSwitch(switchBlockAdsElName, blockSettings.block_ads)
-    // ZaDarkUtils.setSwitch(switchBlockTelemetryElName, blockSettings.block_telemetry)
     ZaDarkUtils.setSwitch(switchAutoDownloadMediaElName, blockSettings.auto_download_media)
     ZaDarkUtils.setSwitch(switchKeepUnsentElName, blockSettings.keep_unsent)
     ZaDarkUtils.setSwitch(switchKeepExpiredMediaElName, blockSettings.keep_expired_media)
@@ -1689,9 +1617,6 @@
     $(switchBlockTypingElName).on('change', handleBlockSettingsChange('block_typing'))
     $(switchBlockSeenElName).on('change', handleBlockSettingsChange('block_seen'))
     $(switchBlockDeliveredElName).on('change', handleBlockSettingsChange('block_delivered'))
-    // $(switchBlockStorySeenElName).on('change', handleBlockSettingsChange('block_story_seen'))
-    // $(switchBlockAdsElName).on('change', handleBlockSettingsChange('block_ads'))
-    // $(switchBlockTelemetryElName).on('change', handleBlockSettingsChange('block_telemetry'))
     $(switchAutoDownloadMediaElName).on('change', handleBlockSettingsChange('auto_download_media'))
     $(switchKeepUnsentElName).on('change', handleBlockSettingsChange('keep_unsent'))
     $(switchKeepExpiredMediaElName).on('change', handleBlockSettingsChange('keep_expired_media'))

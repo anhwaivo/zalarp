@@ -76,8 +76,9 @@
       push.call(stack, [
         [],
         {
+          /* eslint-disable-next-line camelcase */
           [CAPTURE_FACTORY_ID]: function (module, exports, __webpack_require__) {
-            req = __webpack_require__
+            req = __webpack_require__ // eslint-disable-line camelcase
           }
         },
         [[CAPTURE_FACTORY_ID, RENDER_CHUNK_ID]]
@@ -917,10 +918,10 @@
       // Stickers etc. have no bubble: the badge stays a plain flex child of the row.
       if (!bubble || !bubble.parentNode) return
 
-      if (typeof ResizeObserver === 'function' && row._zadarkObserved !== bubble) {
+      if (typeof window.ResizeObserver === 'function' && row._zadarkObserved !== bubble) {
         if (row._zadarkResize) row._zadarkResize.disconnect()
         row._zadarkObserved = bubble
-        row._zadarkResize = new ResizeObserver(() => place(row))
+        row._zadarkResize = new window.ResizeObserver(() => place(row))
         row._zadarkResize.observe(bubble)
       }
 
