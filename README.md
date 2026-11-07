@@ -5,7 +5,7 @@
 
   <h1>ZaLarp - <a href="https://github.com/ncdai/zadark">ZaDark</a> with more features ig</h1>
 
-  <p>QOL for zalor, hiện tại chỉ có build windows th :)</p>
+  <p>Zalor mod</p>
 </div>
 
 ---
